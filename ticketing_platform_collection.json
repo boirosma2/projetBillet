@@ -1,0 +1,142 @@
+{
+  "info": {
+    "_postman_id": "ticketing-platform-collection",
+    "name": "Ticketing Platform API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"newuser\",\n    \"email\": \"newuser@example.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/auth/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "List Events",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/events",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "events"]
+            }
+          }
+        },
+        {
+          "name": "Create Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Winter Jazz Festival\",\n    \"description\": \"Annual winter jazz concert\",\n    \"date\": \"2024-12-15 19:00:00\",\n    \"venue\": \"City Concert Hall\",\n    \"total_tickets\": 800,\n    \"price\": 75.50\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/events",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "events"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tickets",
+      "item": [
+        {
+          "name": "Purchase Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"event_id\": 1,\n    \"user_id\": 1\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/tickets",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tickets"]
+            }
+          }
+        },
+        {
+          "name": "Get User Tickets",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/tickets/user/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tickets", "user", "1"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
