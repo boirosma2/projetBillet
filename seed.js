@@ -6,17 +6,17 @@ async function seedDatabase() {
     // Seed users
     const hashedPassword = await bcrypt.hash('password123', 10)
     await db.run(
-      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)', 
+      'INSERT OR IGNORE INTO users (username, email, password) VALUES (?, ?, ?)', 
       ['johndoe', 'john@example.com', hashedPassword]
     )
     await db.run(
-      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)', 
+      'INSERT OR IGNORE INTO users (username, email, password) VALUES (?, ?, ?)', 
       ['janedoe', 'jane@example.com', hashedPassword]
     )
 
     // Seed events
     await db.run(`
-      INSERT INTO events 
+      INSERT OR IGNORE INTO events 
       (title, description, date, venue, total_tickets, available_tickets, price) 
       VALUES 
       (?, ?, ?, ?, ?, ?, ?)
@@ -31,7 +31,7 @@ async function seedDatabase() {
     ])
 
     await db.run(`
-      INSERT INTO events 
+      INSERT OR IGNORE INTO events 
       (title, description, date, venue, total_tickets, available_tickets, price) 
       VALUES 
       (?, ?, ?, ?, ?, ?, ?)
