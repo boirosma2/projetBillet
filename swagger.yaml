@@ -1,43 +1,614 @@
 openapi: 3.0.0
 info:
   title: Ticketing Platform API
+  description: API for managing events, tickets, and user authentication
   version: 1.0.0
+  contact:
+    name: SmartTicket Support
 servers:
   - url: http://localhost:3000/api
+    description: Development server
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+          type: string
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          format: date-time
+        venue:
+          type: string
+        total_tickets:
+          type: integer
+        available_tickets:
+          type: integer
+        price:
+          type: number
+          format: float
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        event_id:
+          type: integer
+          format: int64
+        user_id:
+          type: integer
+          format: int64
+        purchase_date:
+          type: string
+          format: date-time
+    Banner:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        event_id:
+          type: integer
+          format: int64
+          nullable: true
+        image_path:
+          type: string
+        image_url:
+          type: string
+        title:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        error:
+          type: string
+
 paths:
   /auth/register:
     post:
+      tags:
+        - Authentication
       summary: Register a new user
+      description: Create a new user account
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - username
+                - email
+                - password
               properties:
                 username:
                   type: string
+                  example: johndoe
                 email:
                   type: string
+                  format: email
+                  example: john@example.com
                 password:
                   type: string
+                  format: password
+                  example: password123
       responses:
         '201':
           description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  username:
+                    type: string
+                  email:
+                    type: string
+        '400':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /auth/login:
     post:
+      tags:
+        - Authentication
       summary: User login
+      description: Authenticate a user and get an access token
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - email
+                - password
               properties:
                 email:
                   type: string
+                  format: email
+                  example: john@example.com
                 password:
                   type: string
+                  format: password
+                  example: password123
       responses:
         '200':
           description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /events:
+    get:
+      tags:
+        - Events
+      summary: Get all events
+      description: Retrieve a list of all available events
+      responses:
+        '200':
+          description: A list of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      tags:
+        - Events
+      summary: Create a new event
+      description: Add a new event to the system
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - description
+                - date
+                - venue
+                - total_tickets
+                - price
+              properties:
+                title:
+                  type: string
+                  example: Summer Music Festival
+                description:
+                  type: string
+                  example: Annual music event featuring various artists
+                date:
+                  type: string
+                  format: date-time
+                  example: 2025-07-15T18:00:00Z
+                venue:
+                  type: string
+                  example: Central Park
+                total_tickets:
+                  type: integer
+                  example: 1000
+                available_tickets:
+                  type: integer
+                  example: 1000
+                price:
+                  type: number
+                  format: float
+                  example: 49.99
+      responses:
+        '201':
+          description: Event created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  message:
+                    type: string
+                  event:
+                    $ref: '#/components/schemas/Event'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tickets:
+    post:
+      tags:
+        - Tickets
+      summary: Purchase a ticket
+      description: Purchase a ticket for an event
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - event_id
+              properties:
+                event_id:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: Ticket purchased successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  message:
+                    type: string
+        '400':
+          description: No tickets available or already purchased
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Get user information
+      description: Retrieve information about users (placeholder)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /orders:
+    get:
+      tags:
+        - Orders
+      summary: Get order information
+      description: Retrieve information about orders (placeholder)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Order information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /banners/active:
+    get:
+      tags:
+        - Banners
+      summary: Get active banner
+      description: Retrieve the currently active banner based on current date
+      responses:
+        '200':
+          description: The active banner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Banner'
+        '404':
+          description: No active banner found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /banners:
+    get:
+      tags:
+        - Banners
+      summary: Get all banners
+      description: Retrieve all banners
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of all banners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Banner'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      tags:
+        - Banners
+      summary: Create a new banner
+      description: Upload a new banner with image
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+                - title
+                - start_date
+                - end_date
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: The banner image file
+                event_id:
+                  type: integer
+                  description: Associated event ID (optional)
+                title:
+                  type: string
+                  description: Banner title
+                start_date:
+                  type: string
+                  format: date-time
+                  description: Start date for displaying the banner
+                end_date:
+                  type: string
+                  format: date-time
+                  description: End date for displaying the banner
+                is_active:
+                  type: boolean
+                  description: Whether the banner is active
+      responses:
+        '201':
+          description: Banner created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  banner:
+                    $ref: '#/components/schemas/Banner'
+        '400':
+          description: Invalid input or missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Associated event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /banners/{id}:
+    put:
+      tags:
+        - Banners
+      summary: Update a banner
+      description: Update an existing banner
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Banner ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: The banner image file (optional)
+                event_id:
+                  type: integer
+                  description: Associated event ID (optional)
+                title:
+                  type: string
+                  description: Banner title
+                start_date:
+                  type: string
+                  format: date-time
+                  description: Start date for displaying the banner
+                end_date:
+                  type: string
+                  format: date-time
+                  description: End date for displaying the banner
+                is_active:
+                  type: boolean
+                  description: Whether the banner is active
+      responses:
+        '200':
+          description: Banner updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  banner:
+                    $ref: '#/components/schemas/Banner'
+        '404':
+          description: Banner or associated event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Banners
+      summary: Delete a banner
+      description: Delete a banner and its associated image
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Banner ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Banner deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Banner not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
