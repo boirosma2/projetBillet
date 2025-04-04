@@ -8,11 +8,14 @@ import swaggerUi from 'swagger-ui-express'
 import YAML from 'yamljs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import db from './config/db.js'
+import { sequelize } from './config/database.js'
 import authRoutes from './routes/auth.js'
 import eventsRoutes from './routes/events.js'
 import ticketsRoutes from './routes/tickets.js'
 import bannersRoutes from './routes/banners.js'
+
+// Importer les modèles pour s'assurer que les associations sont établies
+import './models/index.js'
 
 // Chemin pour le fichier swagger.yaml
 const __filename = fileURLToPath(import.meta.url)
@@ -60,12 +63,13 @@ app.use((err, req, res, next) => {
 })
 
 // Démarrage du serveur
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 5000
 
 async function startServer() {
   try {
-    // Connexion à la base de données
-    await db.connect()
+    // Tester la connexion à la base de données
+    await sequelize.authenticate()
+    console.log('Connexion à la base de données établie avec succès')
     
     app.listen(PORT, () => {
       console.log(`Serveur en cours d'exécution sur le port ${PORT}`)
@@ -73,6 +77,7 @@ async function startServer() {
     })
   } catch (error) {
     console.error('Erreur de démarrage du serveur:', error)
+    process.exit(1)
   }
 }
 

@@ -1,71 +1,113 @@
 import express from 'express';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import db from '../config/db.js';
+import validate from '../middleware/validate.js';
+import { registerSchema, loginSchema } from '../validators/auth.js';
+import { User } from '../models/index.js';
+import { sequelize } from '../config/database.js';
 
 const router = express.Router();
 
-// Inscription
-router.post('/register', async (req, res) => {
+// Inscription avec validation
+router.post('/register', validate(registerSchema), async (req, res) => {
+  // Utiliser une transaction pour garantir l'intégrité des données
+  const transaction = await sequelize.transaction();
+  
   try {
     const { username, email, password } = req.body;
 
     // Vérifier si l'utilisateur existe déjà
-    const existingUser = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (existingUser.rows.length > 0) {
+    const existingUser = await User.findOne({ 
+      where: { email },
+      transaction
+    });
+    
+    if (existingUser) {
+      await transaction.rollback();
       return res.status(400).json({ message: 'Utilisateur déjà existant' });
     }
 
-    // Hacher le mot de passe
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // Créer l'utilisateur - le hook beforeCreate se chargera de hacher le mot de passe
+    const user = await User.create({
+      username,
+      email,
+      password, // Le mot de passe sera haché automatiquement par le hook du modèle
+      role: 'regular',
+      is_active: true
+    }, { transaction });
 
-    // Enregistrer l'utilisateur
-    const result = await db.query(
-      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
-      [username, email, hashedPassword]
-    );
+    // Valider la transaction
+    await transaction.commit();
 
+    // Retourner l'utilisateur sans le mot de passe
     res.status(201).json({ 
-      id: result.rows[0].id, 
-      username, 
-      email 
+      id: user.id, 
+      username: user.username, 
+      email: user.email 
     });
   } catch (error) {
+    // Annuler la transaction en cas d'erreur
+    await transaction.rollback();
+    
+    // Gérer les erreurs spécifiques
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ 
+        message: 'Cet utilisateur existe déjà', 
+        error: error.errors.map(e => ({ field: e.path, message: e.message }))
+      });
+    }
+    
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({ 
+        message: 'Erreur de validation', 
+        error: error.errors.map(e => ({ field: e.path, message: e.message }))
+      });
+    }
+    
     res.status(500).json({ message: 'Erreur lors de l\'inscription', error: error.message });
   }
 });
 
-// Connexion
-router.post('/login', async (req, res) => {
+// Connexion avec validation
+router.post('/login', validate(loginSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
 
     // Trouver l'utilisateur
-    const user = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (user.rows.length === 0) {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
       return res.status(400).json({ message: 'Identifiants invalides' });
     }
 
-    // Vérifier le mot de passe
-    const isMatch = await bcrypt.compare(password, user.rows[0].password);
+    // Vérifier si le compte est actif
+    if (!user.is_active) {
+      return res.status(403).json({ message: 'Ce compte a été désactivé' });
+    }
+
+    // Vérifier le mot de passe avec la méthode du modèle
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Identifiants invalides' });
     }
 
     // Générer un token
     const token = jwt.sign(
-      { id: user.rows[0].id, email: user.rows[0].email }, 
+      { 
+        id: user.id, 
+        email: user.email,
+        role: user.role
+      }, 
       process.env.JWT_SECRET, 
       { expiresIn: '1h' }
     );
 
+    // Retourner le token et les informations utilisateur
     res.json({ 
       token, 
       user: { 
-        id: user.rows[0].id, 
-        username: user.rows[0].username, 
-        email: user.rows[0].email 
+        id: user.id, 
+        username: user.username, 
+        email: user.email,
+        role: user.role
       } 
     });
   } catch (error) {

@@ -6,7 +6,7 @@ info:
   contact:
     name: SmartTicket Support
 servers:
-  - url: http://localhost:3000/api
+  - url: http://localhost:${PORT}/api
     description: Development server
 components:
   securitySchemes:
