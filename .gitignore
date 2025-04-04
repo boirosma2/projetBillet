@@ -6,3 +6,6 @@
 
 # Nodes modules
 node_modules/*
+
+#ENV file
+.env
