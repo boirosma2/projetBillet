@@ -10,6 +10,12 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const events = await Event.findAll({
+      include: [
+        { association: 'venue' },
+        { association: 'organizer' },
+        { association: 'eventType' },
+        { association: 'artists' }
+      ],
       order: [['date', 'ASC']] // Trier par date croissante
     });
     res.json(events);
@@ -22,7 +28,14 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const event = await Event.findByPk(id);
+    const event = await Event.findByPk(id, {
+      include: [
+        { association: 'venue' },
+        { association: 'organizer' },
+        { association: 'eventType' },
+        { association: 'artists' }
+      ]
+    });
     
     if (!event) {
       return res.status(404).json({ message: 'Événement non trouvé' });
@@ -37,14 +50,26 @@ router.get('/:id', async (req, res) => {
 // Create a new event (requires authentication and validation)
 router.post('/', authMiddleware, validate(createEventSchema), async (req, res) => {
   try {
-    const { title, description, date, venue, total_tickets, available_tickets, price } = req.body;
+    const { 
+      title, 
+      description, 
+      date, 
+      venue_id,
+      organizer_id,
+      event_type_id,
+      total_tickets, 
+      available_tickets, 
+      price 
+    } = req.body;
 
     // Utiliser Sequelize pour créer un nouvel événement
     const event = await Event.create({
       title,
       description,
       date,
-      venue,
+      venue_id,
+      organizer_id,
+      event_type_id,
       total_tickets,
       available_tickets: available_tickets !== undefined ? available_tickets : total_tickets,
       price,
@@ -86,7 +111,9 @@ router.put('/:id', authMiddleware, validate(updateEventSchema), async (req, res)
     if (req.body.title !== undefined) fieldsToUpdate.title = req.body.title;
     if (req.body.description !== undefined) fieldsToUpdate.description = req.body.description;
     if (req.body.date !== undefined) fieldsToUpdate.date = req.body.date;
-    if (req.body.venue !== undefined) fieldsToUpdate.venue = req.body.venue;
+    if (req.body.venue_id !== undefined) fieldsToUpdate.venue_id = req.body.venue_id;
+    if (req.body.organizer_id !== undefined) fieldsToUpdate.organizer_id = req.body.organizer_id;
+    if (req.body.event_type_id !== undefined) fieldsToUpdate.event_type_id = req.body.event_type_id;
     if (req.body.total_tickets !== undefined) fieldsToUpdate.total_tickets = req.body.total_tickets;
     if (req.body.available_tickets !== undefined) fieldsToUpdate.available_tickets = req.body.available_tickets;
     if (req.body.price !== undefined) fieldsToUpdate.price = req.body.price;

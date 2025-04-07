@@ -27,13 +27,25 @@ export const createEventSchema = Joi.object({
       'any.required': 'La date est requise'
     }),
   
-  venue: Joi.string().min(3).max(100).required()
+  venue_id: Joi.number().integer().required()
     .messages({
-      'string.base': 'Le lieu doit être une chaîne de caractères',
-      'string.empty': 'Le lieu ne peut pas être vide',
-      'string.min': 'Le lieu doit contenir au moins {#limit} caractères',
-      'string.max': 'Le lieu ne doit pas dépasser {#limit} caractères',
-      'any.required': 'Le lieu est requis'
+      'number.base': 'L\'ID du lieu doit être un nombre',
+      'number.integer': 'L\'ID du lieu doit être un entier',
+      'any.required': 'L\'ID du lieu est requis'
+    }),
+    
+  organizer_id: Joi.number().integer().required()
+    .messages({
+      'number.base': 'L\'ID de l\'organisateur doit être un nombre',
+      'number.integer': 'L\'ID de l\'organisateur doit être un entier',
+      'any.required': 'L\'ID de l\'organisateur est requis'
+    }),
+    
+  event_type_id: Joi.number().integer().required()
+    .messages({
+      'number.base': 'L\'ID du type d\'événement doit être un nombre',
+      'number.integer': 'L\'ID du type d\'événement doit être un entier',
+      'any.required': 'L\'ID du type d\'événement est requis'
     }),
   
   total_tickets: Joi.number().integer().min(1).required()
@@ -87,12 +99,22 @@ export const updateEventSchema = Joi.object({
       'date.greater': 'La date doit être ultérieure à aujourd\'hui'
     }),
   
-  venue: Joi.string().min(3).max(100)
+  venue_id: Joi.number().integer()
     .messages({
-      'string.base': 'Le lieu doit être une chaîne de caractères',
-      'string.empty': 'Le lieu ne peut pas être vide',
-      'string.min': 'Le lieu doit contenir au moins {#limit} caractères',
-      'string.max': 'Le lieu ne doit pas dépasser {#limit} caractères'
+      'number.base': 'L\'ID du lieu doit être un nombre',
+      'number.integer': 'L\'ID du lieu doit être un entier'
+    }),
+    
+  organizer_id: Joi.number().integer()
+    .messages({
+      'number.base': 'L\'ID de l\'organisateur doit être un nombre',
+      'number.integer': 'L\'ID de l\'organisateur doit être un entier'
+    }),
+    
+  event_type_id: Joi.number().integer()
+    .messages({
+      'number.base': 'L\'ID du type d\'événement doit être un nombre',
+      'number.integer': 'L\'ID du type d\'événement doit être un entier'
     }),
   
   total_tickets: Joi.number().integer().min(1)

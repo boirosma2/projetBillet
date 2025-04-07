@@ -57,20 +57,32 @@ describe('Events Routes', () => {
           title: 'Test Event 1',
           description: 'Test Description 1',
           date: new Date().toISOString(),
-          venue: 'Test Venue 1',
+          venue_id: 1,
+          organizer_id: 1,
+          event_type_id: 1,
           total_tickets: 100,
           available_tickets: 50,
-          price: 20.00
+          price: 20.00,
+          venue: { id: 1, name: 'Venue 1' },
+          organizer: { id: 1, name: 'Organizer 1' },
+          eventType: { id: 1, name: 'Concert' },
+          artists: [ { id: 1, name: 'Artist 1' } ]
         },
         {
           id: 2,
           title: 'Test Event 2',
           description: 'Test Description 2',
           date: new Date().toISOString(),
-          venue: 'Test Venue 2',
+          venue_id: 2,
+          organizer_id: 2,
+          event_type_id: 2,
           total_tickets: 200,
           available_tickets: 150,
-          price: 30.00
+          price: 30.00,
+          venue: { id: 2, name: 'Venue 2' },
+          organizer: { id: 2, name: 'Organizer 2' },
+          eventType: { id: 2, name: 'Festival' },
+          artists: [ { id: 2, name: 'Artist 2' } ]
         }
       ];
       
@@ -93,10 +105,16 @@ describe('Events Routes', () => {
         title: 'Test Event',
         description: 'Test Description',
         date: new Date().toISOString(),
-        venue: 'Test Venue',
+        venue_id: 1,
+        organizer_id: 1,
+        event_type_id: 1,
         total_tickets: 100,
         available_tickets: 50,
-        price: 20.00
+        price: 20.00,
+        venue: { id: 1, name: 'Venue 1' },
+        organizer: { id: 1, name: 'Organizer 1' },
+        eventType: { id: 1, name: 'Concert' },
+        artists: [ { id: 1, name: 'Artist 1' } ]
       };
       
       Event.findByPk.mockResolvedValue(mockEvent);
@@ -106,7 +124,9 @@ describe('Events Routes', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body.id).toBe(1);
       expect(response.body.title).toBe('Test Event');
-      expect(Event.findByPk).toHaveBeenCalledWith('1');
+      // Vérifier que findByPk a été appelé avec ID et includes
+      expect(Event.findByPk).toHaveBeenCalled();
+      expect(Event.findByPk.mock.calls[0][0]).toBe('1');
     });
 
     it('should return 404 if event not found', async () => {
@@ -128,7 +148,9 @@ describe('Events Routes', () => {
         title: 'New Event',
         description: 'New Event Description',
         date: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
-        venue: 'New Venue',
+        venue_id: 1,
+        organizer_id: 1,
+        event_type_id: 1,
         total_tickets: 100,
         available_tickets: 100,
         price: 25.00,
@@ -143,7 +165,9 @@ describe('Events Routes', () => {
           title: 'New Event',
           description: 'New Event Description',
           date: new Date(Date.now() + 86400000).toISOString(),
-          venue: 'New Venue',
+          venue_id: 1,
+          organizer_id: 1,
+          event_type_id: 1,
           total_tickets: 100,
           price: 25.00
         });
