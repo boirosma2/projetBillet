@@ -27,7 +27,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"username\": \"newuser\",\n    \"email\": \"newuser@example.com\",\n    \"password\": \"password123\"\n}"
+              "raw": "{\n    \"username\": \"newuser\",\n    \"email\": \"newuser@example.com\",\n    \"password\": \"@Password123\"\n}"
             },
             "url": {
               "raw": "http://localhost:5000/api/auth/register",
@@ -64,6 +64,301 @@
       ]
     },
     {
+      "name": "Cities",
+      "item": [
+        {
+          "name": "List Cities",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/cities",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "cities"]
+            }
+          }
+        },
+        {
+          "name": "Get City by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/cities/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "cities", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create City",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Bordeaux\",\n    \"country\": \"France\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/cities",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "cities"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Venues",
+      "item": [
+        {
+          "name": "List Venues",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/venues",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "venues"]
+            }
+          }
+        },
+        {
+          "name": "Get Venue by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/venues/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "venues", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Venue",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Salle Pleyel\",\n    \"address\": \"252 Rue du Faubourg Saint-Honoré, 75008 Paris\",\n    \"city_id\": 1,\n    \"capacity\": 1900,\n    \"description\": \"Une salle de concert historique située au cœur de Paris\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/venues",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "venues"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Organizers",
+      "item": [
+        {
+          "name": "List Organizers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/organizers",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "organizers"]
+            }
+          }
+        },
+        {
+          "name": "Get Organizer by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/organizers/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "organizers", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Organizer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Olympia Production\",\n    \"email\": \"contact@olympiaprod.fr\",\n    \"bio\": \"Producteur et organisateur d'événements musicaux\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/organizers",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "organizers"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Artists",
+      "item": [
+        {
+          "name": "List Artists",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/artists",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "artists"]
+            }
+          }
+        },
+        {
+          "name": "Get Artist by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/artists/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "artists", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Artist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"DJ Mixmaster\",\n    \"genre\": \"Électro\",\n    \"bio\": \"DJ pionnier de la scène électro française\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/artists",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "artists"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Event Types",
+      "item": [
+        {
+          "name": "List Event Types",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/event-types",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "event-types"]
+            }
+          }
+        },
+        {
+          "name": "Get Event Type by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/event-types/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "event-types", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Event Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Exposition\",\n    \"description\": \"Exposition d'art ou de science\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/event-types",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "event-types"]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Events",
       "item": [
         {
@@ -80,6 +375,19 @@
           }
         },
         {
+          "name": "Get Event by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/events/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "events", "1"]
+            }
+          }
+        },
+        {
           "name": "Create Event",
           "request": {
             "method": "POST",
@@ -87,11 +395,16 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"Winter Jazz Festival\",\n    \"description\": \"Annual winter jazz concert\",\n    \"date\": \"2024-12-15 19:00:00\",\n    \"venue\": \"City Concert Hall\",\n    \"total_tickets\": 800,\n    \"price\": 75.50\n}"
+              "raw": "{\n    \"title\": \"Winter Jazz Festival\",\n    \"description\": \"Annual winter jazz concert\",\n    \"date\": \"2024-12-15 19:00:00\",\n    \"venue_id\": 1,\n    \"organizer_id\": 1,\n    \"event_type_id\": 1,\n    \"total_tickets\": 800,\n    \"price\": 75.50\n}"
             },
             "url": {
               "raw": "http://localhost:5000/api/events",
@@ -99,6 +412,34 @@
               "host": ["localhost"],
               "port": "5000",
               "path": ["api", "events"]
+            }
+          }
+        },
+        {
+          "name": "Add Artist to Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"artist_id\": 1,\n    \"position\": \"Headliner\",\n    \"performance_time\": \"2024-12-15 20:30:00\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/events/1/artists",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "events", "1", "artists"]
             }
           }
         }

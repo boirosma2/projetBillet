@@ -36,6 +36,18 @@ describe('Authentication Routes', () => {
     // Configuration de l'environnement
     process.env.JWT_SECRET = 'test_secret';
   });
+  
+  // Nettoyage global après tous les tests
+  afterAll(done => {
+    // Ferme tous les timers et connexions pendantes
+    jest.useRealTimers();
+    // Assurer que toutes les promesses en attente sont résolues
+    Promise.resolve().then(() => {
+      setTimeout(() => {
+        done();
+      }, 100);
+    });
+  });
 
   describe('POST /api/auth/register', () => {
     it('should register a new user', async () => {

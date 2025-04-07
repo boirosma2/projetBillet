@@ -1,13 +1,9 @@
 import multer from 'multer';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Définir le dossier de destination pour les uploads
-const uploadDir = path.join(__dirname, '../public/uploads');
+// Approche compatible avec Jest pour définir le chemin d'upload
+const uploadDir = path.join(process.cwd(), 'public/uploads');
 
 // Créer le dossier s'il n'existe pas
 if (!fs.existsSync(uploadDir)) {

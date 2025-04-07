@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { Banner, Event } from '../models/index.js';
 import { sequelize } from '../config/database.js';
+import { Op } from 'sequelize';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const uploadDir = path.join(__dirname, '../public/uploads');
+// Dans les environnements de test, process.env.NODE_ENV est généralement 'test'
+// Utiliser une approche simple qui fonctionne à la fois en prod et en test
+const uploadDir = path.join(process.cwd(), 'public/uploads');
 
 // Helper pour construire l'URL de l'image
 const getImageUrl = (req, imagePath) => {
@@ -23,8 +23,8 @@ export const getActiveBanner = async (req, res) => {
     const banner = await Banner.findOne({
       where: {
         is_active: true,
-        start_date: { [sequelize.Op.lte]: currentDate },
-        end_date: { [sequelize.Op.gte]: currentDate }
+        start_date: { [Op.lte]: currentDate },
+        end_date: { [Op.gte]: currentDate }
       },
       include: [{
         model: Event,

@@ -39,11 +39,28 @@
 - Validation both at model level (Sequelize) and API level (Joi)
 - Database operations use Sequelize methods (findAll, findByPk, create, update, destroy)
 
+### Core Models
+- **User**: User accounts with authentication
+- **Event**: Events with tickets, venue, organizer, type and artists
+- **Ticket**: Purchased tickets for events
+- **Banner**: Promotional banners for events
+
+### Extension Models
+- **City**: Cities where venues are located
+- **Venue**: Event venues with capacity and location
+- **Organizer**: Event organizers/producers
+- **Artist**: Artists performing at events
+- **EventType**: Categories of events (concert, festival, etc.)
+- **EventArtist**: Junction table for many-to-many relationship between events and artists
+
 ## Data Access Patterns
 - Direct access through Sequelize models
 - Use of Sequelize associations for related data (include)
+- Complex relationships (one-to-many, many-to-many)
+- Table joins via Sequelize association includes
 - Transactions for operations involving multiple tables
 - Eager loading to minimize database queries
+- Nested includes for multi-level relationships (e.g., Event > Venue > City)
 
 ## Validation
 - Data validation uses Joi
@@ -58,3 +75,16 @@
 - Always commit or rollback transactions to prevent hanging database connections
 - Include error handling in transaction blocks
 - Use locking when necessary to prevent race conditions (especially for ticket purchases)
+- Multiple database operations in single atomic transactions
+- Complex transactions for event creation with artists
+- Foreign key constraints enforced at database level
+
+## Entity Relationships
+- User (1) → Tickets (N)
+- Event (1) → Tickets (N)
+- Event (N) ↔ Artist (N) via EventArtist
+- Event (N) → Venue (1)
+- Venue (N) → City (1)
+- Event (N) → Organizer (1)
+- Event (N) → EventType (1)
+- Event (1) → Banners (N)

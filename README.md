@@ -40,12 +40,33 @@ smartticket-backend/
 - Middleware d'authentification pour protéger les routes
 - Rôles utilisateur (regular, admin)
 
+### Gestion des lieux et villes
+
+- Modèles City (ville) et Venue (lieu) pour organiser les événements
+- Relations hiérarchiques (City > Venue)
+- Informations détaillées sur les lieux (capacité, adresse, etc.)
+- Filtrage des lieux par ville
+
+### Gestion des organisateurs et artistes
+
+- Modèles Organizer (organisateur) et Artist (artiste)
+- Profils détaillés pour les artistes (genre, bio)
+- Association des organisateurs aux événements
+- Relation many-to-many entre événements et artistes
+
+### Gestion des types d'événements
+
+- Modèle EventType pour catégoriser les événements
+- Types standardisés (concert, festival, théâtre, etc.)
+- Association des types aux événements
+
 ### Gestion des événements
 
 - Création, récupération, mise à jour et suppression d'événements
 - Validation complète des données d'événements
 - Gestion de la quantité de billets disponibles
-- Filtrage des événements par statut, date, etc.
+- Filtrage des événements par statut, date, lieu, type, organisateur, etc.
+- Association aux artistes, lieux, organisateurs et types d'événements
 
 ### Billetterie
 
@@ -74,9 +95,11 @@ Nous avons implémenté un système de validation robuste avec Joi:
 ### 2. ORM et modèles
 
 Introduction de Sequelize comme ORM:
-- Modèles pour User, Event, Ticket et Banner
+- Modèles pour User, Event, Ticket, Banner, City, Venue, Artist, Organizer, EventType et EventArtist
 - Validation au niveau du modèle
-- Associations entre entités (relations)
+- Associations complexes entre entités (one-to-many, many-to-many)
+- Structure hiérarchique (City > Venue > Event)
+- Table de jointure pour relations many-to-many (EventArtist)
 - Hooks pour la logique pré/post opération (ex: hachage des mots de passe)
 
 ### 3. Migrations et seeds
@@ -158,15 +181,21 @@ http://localhost:5000/api-docs
 
 - Remplacement des requêtes SQL directes par l'utilisation de l'ORM Sequelize
 - Implémentation de transactions pour les opérations critiques (achat de tickets, gestion de bannières)
+- Extension du modèle de données avec de nouvelles entités (City, Venue, Artist, Organizer, EventType)
+- Mise en place de relations complexes entre entités, y compris des relations many-to-many
 - Utilisation des associations Sequelize pour les relations entre entités
 - Optimisation des requêtes avec eager loading pour réduire le nombre d'appels à la base de données
 - Amélioration de la gestion des erreurs et de la validation des données
+- Système plus complet pour la gestion d'événements avec localisation, organisateurs et artistes
 
 ## Améliorations futures
 
-- Implémentation de tests unitaires et d'intégration
+- Développement des API pour les nouvelles entités
+- Implémentation de tests unitaires et d'intégration complets pour tous les modèles
+- Système de recherche avancée (full-text search) pour les événements, artistes, lieux
 - Système de paiement
 - Notifications par email
 - Gestion des catégories de billets
 - Système de réservation temporaire
 - Tableau de bord d'administration
+- Système de recommandation d'événements basé sur les préférences utilisateur

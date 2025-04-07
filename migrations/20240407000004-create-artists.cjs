@@ -3,48 +3,28 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('events', {
+    await queryInterface.createTable('artists', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      title: {
+      name: {
         type: Sequelize.STRING(100),
         allowNull: false
       },
-      description: {
+      genre: {
+        type: Sequelize.STRING(50),
+        allowNull: false
+      },
+      bio: {
         type: Sequelize.TEXT,
-        allowNull: false
-      },
-      date: {
-        type: Sequelize.DATE,
-        allowNull: false
-      },
-      venue: {
-        type: Sequelize.STRING(100),
-        allowNull: false
-      },
-      total_tickets: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-      },
-      available_tickets: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-      },
-      price: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: true
       },
       image_path: {
         type: Sequelize.STRING,
         allowNull: true
-      },
-      status: {
-        type: Sequelize.ENUM('upcoming', 'active', 'completed', 'cancelled'),
-        defaultValue: 'upcoming'
       },
       created_at: {
         allowNull: false,
@@ -60,6 +40,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('events');
+    await queryInterface.dropTable('artists');
   }
 };

@@ -3,6 +3,7 @@ import express from 'express';
 import { Event } from '../models/index.js';
 import eventsRoutes from '../routes/events.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { Sequelize } from 'sequelize';
 
 // Mock des middleware et modèles
 jest.mock('../middleware/auth.js', () => ({
@@ -36,6 +37,15 @@ describe('Events Routes', () => {
   // Nettoyage des mocks avant chaque test
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+  
+  // Nettoyage global après tous les tests
+  afterAll(done => {
+    // Ferme tous les timers et connexions pendantes
+    jest.useRealTimers();
+    setTimeout(() => {
+      done();
+    }, 100);
   });
 
   describe('GET /api/events', () => {
@@ -148,32 +158,25 @@ describe('Events Routes', () => {
 
   describe('PUT /api/events/:id', () => {
     it('should update an existing event', async () => {
-      // Mock de findByPk pour vérifier si l'événement existe
-      Event.findByPk.mockResolvedValue({
+      // Créer un événement original avec une méthode update
+      const originalEvent = {
         id: 1,
         title: 'Old Title',
-        update: jest.fn()
-      });
+        description: 'Old Description',
+        update: jest.fn().mockResolvedValue([1])
+      };
       
-      // Mock pour la récupération après mise à jour
+      // Événement mis à jour à retourner après l'update
       const updatedEvent = {
         id: 1,
         title: 'Updated Title',
         description: 'Updated Description'
       };
       
-      // Simuler la mise à jour et le retour de l'événement mis à jour
-      Event.findByPk.mockImplementation(async (id, options) => {
-        if (options && options.transaction) {
-          return updatedEvent;
-        } else {
-          return {
-            id: 1,
-            title: 'Old Title',
-            update: jest.fn().mockResolvedValue([1])
-          };
-        }
-      });
+      // Configurer le mock pour retourner d'abord l'original puis l'événement mis à jour
+      Event.findByPk
+        .mockResolvedValueOnce(originalEvent)  // Premier appel - vérification
+        .mockResolvedValueOnce(updatedEvent);  // Deuxième appel - après mise à jour
       
       const response = await request(app)
         .put('/api/events/1')

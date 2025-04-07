@@ -44,12 +44,33 @@ Event.init({
     }
   },
   
-  // Lieu de l'événement
-  venue: {
-    type: DataTypes.STRING(100),
+  // Référence au lieu (sera définie par une association)
+  venue_id: {
+    type: DataTypes.INTEGER,
     allowNull: false,
-    validate: {
-      len: [3, 100]
+    references: {
+      model: 'venues',
+      key: 'id'
+    }
+  },
+  
+  // Référence à l'organisateur (sera définie par une association)
+  organizer_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'organizers',
+      key: 'id'
+    }
+  },
+  
+  // Référence au type d'événement (sera définie par une association)
+  event_type_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'event_types',
+      key: 'id'
     }
   },
   
