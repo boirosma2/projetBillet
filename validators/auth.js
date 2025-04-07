@@ -52,3 +52,46 @@ export const loginSchema = Joi.object({
       'any.required': 'Le mot de passe est requis'
     })
 });
+
+// Schéma de validation pour la mise à jour d'un utilisateur
+export const updateUserSchema = Joi.object({
+  username: Joi.string().alphanum().min(3).max(30)
+    .messages({
+      'string.base': 'Le nom d\'utilisateur doit être une chaîne de caractères',
+      'string.empty': 'Le nom d\'utilisateur ne peut pas être vide',
+      'string.min': 'Le nom d\'utilisateur doit contenir au moins {#limit} caractères',
+      'string.max': 'Le nom d\'utilisateur ne doit pas dépasser {#limit} caractères',
+      'string.alphanum': 'Le nom d\'utilisateur ne doit contenir que des caractères alphanumériques'
+    }),
+  
+  email: Joi.string().email()
+    .messages({
+      'string.base': 'L\'email doit être une chaîne de caractères',
+      'string.empty': 'L\'email ne peut pas être vide',
+      'string.email': 'L\'email doit être valide'
+    }),
+  
+  password: Joi.string()
+    .min(8)
+    .max(30)
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+    .messages({
+      'string.base': 'Le mot de passe doit être une chaîne de caractères',
+      'string.empty': 'Le mot de passe ne peut pas être vide',
+      'string.min': 'Le mot de passe doit contenir au moins {#limit} caractères',
+      'string.max': 'Le mot de passe ne doit pas dépasser {#limit} caractères',
+      'string.pattern.base': 'Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial'
+    }),
+  
+  role: Joi.string().valid('regular', 'admin')
+    .messages({
+      'string.base': 'Le rôle doit être une chaîne de caractères',
+      'string.empty': 'Le rôle ne peut pas être vide',
+      'any.only': 'Le rôle doit être soit "regular" soit "admin"'
+    }),
+  
+  is_active: Joi.boolean()
+    .messages({
+      'boolean.base': 'Le statut d\'activation doit être un booléen'
+    })
+}).min(1).messages({ 'object.min': 'Au moins un champ doit être fourni pour la mise à jour' });

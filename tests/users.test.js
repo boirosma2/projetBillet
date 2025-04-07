@@ -1,6 +1,6 @@
 import request from 'supertest';
 import express from 'express';
-import { User } from '../models/index.js';
+import { User, Ticket, Event, sequelize } from '../models/index.js';
 import usersRoutes from '../routes/users.js';
 import { authMiddleware } from '../middleware/auth.js';
 
@@ -21,8 +21,20 @@ jest.mock('../models/index.js', () => {
     destroy: jest.fn()
   };
   
+  const mockTicket = {
+    findAll: jest.fn()
+  };
+  
   return {
-    User: mockUser
+    User: mockUser,
+    Ticket: mockTicket,
+    Event: {},
+    sequelize: {
+      transaction: jest.fn(() => ({
+        commit: jest.fn().mockResolvedValue(),
+        rollback: jest.fn().mockResolvedValue()
+      }))
+    }
   };
 });
 
@@ -74,7 +86,10 @@ describe('Users Routes', () => {
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBe(2);
       expect(authMiddleware).toHaveBeenCalled();
-      expect(User.findAll).toHaveBeenCalled();
+      expect(User.findAll).toHaveBeenCalledWith({
+        attributes: { exclude: ['password'] },
+        order: [['username', 'ASC']]
+      });
     });
   });
 
@@ -97,7 +112,9 @@ describe('Users Routes', () => {
       expect(response.body.id).toBe(1);
       expect(response.body.username).toBe('testuser');
       expect(response.body).not.toHaveProperty('password');
-      expect(User.findByPk).toHaveBeenCalledWith('1');
+      expect(User.findByPk).toHaveBeenCalledWith('1', {
+        attributes: { exclude: ['password'] }
+      });
     });
 
     it('should return 404 if user not found', async () => {
@@ -121,8 +138,18 @@ describe('Users Routes', () => {
         update: jest.fn().mockResolvedValue([1])
       };
       
-      User.findByPk.mockResolvedValue(mockUser);
-      User.update.mockResolvedValue([1]);
+      // Mock de l'utilisateur mis à jour retourné par la seconde requête
+      const updatedMockUser = {
+        id: 1,
+        username: 'newname',
+        email: 'new@example.com',
+        role: 'regular',
+        is_active: true
+      };
+      
+      // Configuration des mocks pour simuler le bon flux
+      User.findByPk.mockResolvedValueOnce(mockUser); // Première requête - trouver l'utilisateur
+      User.findByPk.mockResolvedValueOnce(updatedMockUser); // Seconde requête - retourner mis à jour
       
       const response = await request(app)
         .put('/api/users/1')
@@ -136,7 +163,8 @@ describe('Users Routes', () => {
       expect(mockUser.update).toHaveBeenCalledWith({
         username: 'newname',
         email: 'new@example.com'
-      });
+      }, { transaction: expect.anything() });
+      expect(sequelize.transaction).toHaveBeenCalled();
     });
 
     it('should return 404 if user to update not found', async () => {
@@ -155,8 +183,38 @@ describe('Users Routes', () => {
   });
 
   describe('DELETE /api/users/:id', () => {
-    it('should delete a user (soft delete)', async () => {
-      // Mock d'utilisateur existant avec méthode de mise à jour
+    it('should delete a user', async () => {
+      // Mock d'utilisateur existant avec méthode destroy
+      const mockUser = {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        destroy: jest.fn().mockResolvedValue(true)
+      };
+      
+      User.findByPk.mockResolvedValue(mockUser);
+      
+      const response = await request(app).delete('/api/users/1');
+      
+      expect(response.statusCode).toBe(200);
+      expect(response.body.message).toContain('Utilisateur supprimé');
+      expect(mockUser.destroy).toHaveBeenCalledWith({ transaction: expect.anything() });
+    });
+
+    it('should return 404 if user to delete not found', async () => {
+      // Mock d'utilisateur non trouvé
+      User.findByPk.mockResolvedValue(null);
+      
+      const response = await request(app).delete('/api/users/999');
+      
+      expect(response.statusCode).toBe(404);
+      expect(response.body.message).toContain('Utilisateur non trouvé');
+    });
+  });
+
+  describe('PATCH /api/users/:id/status', () => {
+    it('should change user status', async () => {
+      // Mock d'utilisateur existant avec méthode update
       const mockUser = {
         id: 1,
         username: 'testuser',
@@ -167,18 +225,87 @@ describe('Users Routes', () => {
       
       User.findByPk.mockResolvedValue(mockUser);
       
-      const response = await request(app).delete('/api/users/1');
+      const response = await request(app)
+        .patch('/api/users/1/status')
+        .send({ is_active: false });
       
       expect(response.statusCode).toBe(200);
-      expect(response.body.message).toContain('Utilisateur désactivé');
-      expect(mockUser.update).toHaveBeenCalledWith({ is_active: false });
+      expect(response.body.message).toContain('désactivé');
+      expect(mockUser.update).toHaveBeenCalledWith(
+        { is_active: false },
+        { transaction: expect.anything() }
+      );
     });
 
-    it('should return 404 if user to delete not found', async () => {
-      // Mock d'utilisateur non trouvé
+    it('should return 404 if user not found', async () => {
       User.findByPk.mockResolvedValue(null);
       
-      const response = await request(app).delete('/api/users/999');
+      const response = await request(app)
+        .patch('/api/users/999/status')
+        .send({ is_active: false });
+      
+      expect(response.statusCode).toBe(404);
+      expect(response.body.message).toContain('Utilisateur non trouvé');
+    });
+
+    it('should return 400 if status is not provided', async () => {
+      const response = await request(app)
+        .patch('/api/users/1/status')
+        .send({});
+      
+      expect(response.statusCode).toBe(400);
+      expect(response.body.message).toContain('statut');
+    });
+  });
+
+  describe('GET /api/users/:id/tickets', () => {
+    it('should return tickets for a user', async () => {
+      // Mock d'utilisateur existant
+      const mockUser = {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        is_active: true
+      };
+      
+      // Mock des tickets associés
+      const mockTickets = [
+        {
+          id: 1,
+          user_id: 1,
+          event_id: 101,
+          price: 50.00,
+          purchase_date: new Date(),
+          ticket_code: 'TICKET123',
+          event: {
+            id: 101,
+            name: 'Concert Test',
+            venue: { name: 'Venue Test' },
+            eventType: { name: 'Concert' }
+          }
+        }
+      ];
+      
+      User.findByPk.mockResolvedValue(mockUser);
+      Ticket.findAll.mockResolvedValue(mockTickets);
+      
+      const response = await request(app).get('/api/users/1/tickets');
+      
+      expect(response.statusCode).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBe(1);
+      expect(response.body[0].ticket_code).toBe('TICKET123');
+      expect(Ticket.findAll).toHaveBeenCalledWith({
+        where: { user_id: '1' },
+        include: expect.any(Array),
+        order: [['purchase_date', 'DESC']]
+      });
+    });
+
+    it('should return 404 if user for tickets not found', async () => {
+      User.findByPk.mockResolvedValue(null);
+      
+      const response = await request(app).get('/api/users/999/tickets');
       
       expect(response.statusCode).toBe(404);
       expect(response.body.message).toContain('Utilisateur non trouvé');

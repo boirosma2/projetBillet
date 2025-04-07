@@ -12,5 +12,7 @@ export default {
   // Ajouter un délai d'attente pour fermer correctement les processus
   testTimeout: 10000,
   // Détection des ressources ouvertes
-  detectOpenHandles: true
+  detectOpenHandles: true,
+  // Ne pas afficher les logs de console pour les tests réussis
+  silent: true
 }

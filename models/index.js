@@ -1,7 +1,6 @@
 import User from './User.js';
 import Event from './Event.js';
 import Ticket from './Ticket.js';
-import Banner from './Banner.js';
 import City from './City.js';
 import Venue from './Venue.js';
 import Organizer from './Organizer.js';
@@ -67,10 +66,6 @@ Event.hasMany(Ticket, {
   as: 'tickets'
 });
 
-Event.hasMany(Banner, { 
-  foreignKey: 'event_id',
-  as: 'banners'
-});
 
 Event.belongsToMany(Artist, {
   through: EventArtist,
@@ -109,17 +104,11 @@ Ticket.belongsTo(Event, {
   as: 'event'
 });
 
-// Associations Banner
-Banner.belongsTo(Event, { 
-  foreignKey: 'event_id',
-  as: 'event'
-});
 
 export {
   User,
   Event,
   Ticket,
-  Banner,
   City,
   Venue,
   Organizer,

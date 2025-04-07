@@ -138,36 +138,7 @@ components:
         purchase_date:
           type: string
           format: date-time
-    Banner:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        event_id:
-          type: integer
-          format: int64
-          nullable: true
-        image_path:
-          type: string
-        image_url:
-          type: string
-        title:
-          type: string
-        start_date:
-          type: string
-          format: date-time
-        end_date:
-          type: string
-          format: date-time
-        is_active:
-          type: boolean
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
+    # Banner schema removed as functionality has been removed from the application
     Error:
       type: object
       properties:
@@ -286,7 +257,7 @@ paths:
       tags:
         - Events
       summary: Get all events
-      description: Retrieve a list of all available events
+      description: Retrieve a list of all available events with venue, organizer, eventType and artists
       responses:
         '200':
           description: A list of events
@@ -295,7 +266,40 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Event'
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    title:
+                      type: string
+                    description:
+                      type: string
+                    date:
+                      type: string
+                      format: date-time
+                    venue:
+                      $ref: '#/components/schemas/Venue'
+                    organizer:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    eventType:
+                      $ref: '#/components/schemas/EventType'
+                    artists:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Artist'
+                    total_tickets:
+                      type: integer
+                    available_tickets:
+                      type: integer
+                    price:
+                      type: number
+                    status:
+                      type: string
         '500':
           description: Server error
           content:
@@ -376,6 +380,313 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /events/{id}:
+    get:
+      tags:
+        - Events
+      summary: Get event by ID
+      description: Retrieve a specific event with all details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Event ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Event details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - Events
+      summary: Update event
+      description: Update an existing event's information
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Event ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                date:
+                  type: string
+                  format: date-time
+                venue_id:
+                  type: integer
+                organizer_id:
+                  type: integer
+                event_type_id:
+                  type: integer
+                price:
+                  type: number
+                  format: float
+                status:
+                  type: string
+                  enum: [upcoming, ongoing, completed, cancelled]
+      responses:
+        '200':
+          description: Event updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  event:
+                    $ref: '#/components/schemas/Event'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Events
+      summary: Delete event
+      description: Delete an event and related data
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Event ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Event deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /events/{id}/artists:
+    post:
+      tags:
+        - Events
+      summary: Add artist to event
+      description: Associate an artist with an event
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Event ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - artist_id
+                - position
+              properties:
+                artist_id:
+                  type: integer
+                  format: int64
+                  example: 1
+                position:
+                  type: string
+                  example: "Headliner"
+                performance_time:
+                  type: string
+                  format: date-time
+                  example: "2025-07-15T20:00:00Z"
+      responses:
+        '201':
+          description: Artist added to event successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  artist:
+                    $ref: '#/components/schemas/Artist'
+        '404':
+          description: Event or artist not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /events/{id}/artists/{artist_id}:
+    put:
+      tags:
+        - Events
+      summary: Update artist in event
+      description: Update an artist's details in an event
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Event ID
+          schema:
+            type: integer
+            format: int64
+        - name: artist_id
+          in: path
+          required: true
+          description: Artist ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                position:
+                  type: string
+                  example: "Support"
+                performance_time:
+                  type: string
+                  format: date-time
+                  example: "2025-07-15T18:30:00Z"
+      responses:
+        '200':
+          description: Artist updated in event successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  eventArtist:
+                    type: object
+        '404':
+          description: Event, artist, or association not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Events
+      summary: Remove artist from event
+      description: Remove an artist from an event
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Event ID
+          schema:
+            type: integer
+            format: int64
+        - name: artist_id
+          in: path
+          required: true
+          description: Artist ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Artist removed from event successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Event, artist, or association not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
   /tickets:
     post:
       tags:
@@ -432,60 +743,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
-  /users:
+                
+  /tickets/user:
     get:
       tags:
-        - Users
-      summary: Get user information
-      description: Retrieve information about users (placeholder)
+        - Tickets
+      summary: Get current user's tickets
+      description: Retrieve all tickets purchased by the authenticated user
       security:
         - BearerAuth: []
       responses:
         '200':
-          description: User information
+          description: List of user's tickets
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-
-  /orders:
-    get:
-      tags:
-        - Orders
-      summary: Get order information
-      description: Retrieve information about orders (placeholder)
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: Order information
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-
-  /banners/active:
-    get:
-      tags:
-        - Banners
-      summary: Get active banner
-      description: Retrieve the currently active banner based on current date
-      responses:
-        '200':
-          description: The active banner
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Banner'
-        '404':
-          description: No active banner found
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+        '401':
+          description: User not authenticated
           content:
             application/json:
               schema:
@@ -497,23 +774,113 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   
-  /banners:
+  /tickets/{id}:
     get:
       tags:
-        - Banners
-      summary: Get all banners
-      description: Retrieve all banners
+        - Tickets
+      summary: Get ticket by ID
+      description: Retrieve a specific ticket's details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Ticket ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Ticket details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '403':
+          description: Unauthorized access to this ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Get all users
+      description: Retrieve a list of all users (admin only)
       security:
         - BearerAuth: []
       responses:
         '200':
-          description: List of all banners
+          description: A list of users
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Banner'
+                  $ref: '#/components/schemas/User'
+        '403':
+          description: Access denied - Admin role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      description: Retrieve a specific user's details (admin or self only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '403':
+          description: Unauthorized access to this user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Server error
           content:
@@ -521,123 +888,46 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     
-    post:
-      tags:
-        - Banners
-      summary: Create a new banner
-      description: Upload a new banner with image
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required:
-                - image
-                - title
-                - start_date
-                - end_date
-              properties:
-                image:
-                  type: string
-                  format: binary
-                  description: The banner image file
-                event_id:
-                  type: integer
-                  description: Associated event ID (optional)
-                title:
-                  type: string
-                  description: Banner title
-                start_date:
-                  type: string
-                  format: date-time
-                  description: Start date for displaying the banner
-                end_date:
-                  type: string
-                  format: date-time
-                  description: End date for displaying the banner
-                is_active:
-                  type: boolean
-                  description: Whether the banner is active
-      responses:
-        '201':
-          description: Banner created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  banner:
-                    $ref: '#/components/schemas/Banner'
-        '400':
-          description: Invalid input or missing required fields
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Associated event not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  
-  /banners/{id}:
     put:
       tags:
-        - Banners
-      summary: Update a banner
-      description: Update an existing banner
+        - Users
+      summary: Update user
+      description: Update a user's information (admin or self only)
       security:
         - BearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
-          description: Banner ID
+          description: User ID
           schema:
             type: integer
+            format: int64
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               type: object
               properties:
-                image:
+                username:
                   type: string
-                  format: binary
-                  description: The banner image file (optional)
-                event_id:
-                  type: integer
-                  description: Associated event ID (optional)
-                title:
+                email:
                   type: string
-                  description: Banner title
-                start_date:
+                  format: email
+                password:
                   type: string
-                  format: date-time
-                  description: Start date for displaying the banner
-                end_date:
+                  format: password
+                role:
                   type: string
-                  format: date-time
-                  description: End date for displaying the banner
+                  enum: [regular, admin]
+                  description: Admin only field
                 is_active:
                   type: boolean
-                  description: Whether the banner is active
+                  description: Admin only field
       responses:
         '200':
-          description: Banner updated successfully
+          description: User updated successfully
           content:
             application/json:
               schema:
@@ -645,10 +935,22 @@ paths:
                 properties:
                   message:
                     type: string
-                  banner:
-                    $ref: '#/components/schemas/Banner'
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Unauthorized access to this user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
-          description: Banner or associated event not found
+          description: User not found
           content:
             application/json:
               schema:
@@ -662,21 +964,336 @@ paths:
     
     delete:
       tags:
-        - Banners
-      summary: Delete a banner
-      description: Delete a banner and its associated image
+        - Users
+      summary: Delete user
+      description: Delete a user (admin only)
       security:
         - BearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
-          description: Banner ID
+          description: User ID
           schema:
             type: integer
+            format: int64
       responses:
         '200':
-          description: Banner deleted successfully
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Unauthorized - Admin only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /users/{id}/status:
+    patch:
+      tags:
+        - Users
+      summary: Change user status
+      description: Activate or deactivate a user account (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - is_active
+              properties:
+                is_active:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: User status changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    type: object
+        '400':
+          description: Status field required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Unauthorized - Admin only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /users/{id}/tickets:
+    get:
+      tags:
+        - Users
+      summary: Get user tickets
+      description: Retrieve all tickets purchased by a specific user (admin or self only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of user's tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+        '403':
+          description: Unauthorized access to this user's tickets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Artists API
+  /artists:
+    get:
+      tags:
+        - Artists
+      summary: Get all artists
+      description: Retrieve a list of all artists
+      responses:
+        '200':
+          description: A list of artists
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Artist'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      tags:
+        - Artists
+      summary: Create a new artist
+      description: Add a new artist to the system
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - genre
+              properties:
+                name:
+                  type: string
+                  example: "Artist Name"
+                genre:
+                  type: string
+                  example: "Rock"
+                bio:
+                  type: string
+                  example: "Artist biography"
+      responses:
+        '201':
+          description: Artist created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  artist:
+                    $ref: '#/components/schemas/Artist'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /artists/{id}:
+    get:
+      tags:
+        - Artists
+      summary: Get artist by ID
+      description: Retrieve a specific artist's details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Artist ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Artist details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artist'
+        '404':
+          description: Artist not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - Artists
+      summary: Update artist
+      description: Update an existing artist's information
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Artist ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                genre:
+                  type: string
+                bio:
+                  type: string
+      responses:
+        '200':
+          description: Artist updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  artist:
+                    $ref: '#/components/schemas/Artist'
+        '404':
+          description: Artist not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Artists
+      summary: Delete artist
+      description: Delete an artist
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Artist ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Artist deleted successfully
           content:
             application/json:
               schema:
@@ -685,7 +1302,1195 @@ paths:
                   message:
                     type: string
         '404':
-          description: Banner not found
+          description: Artist not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /artists/{id}/events:
+    get:
+      tags:
+        - Artists
+      summary: Get artist's events
+      description: Retrieve all events this artist is performing at
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Artist ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '404':
+          description: Artist not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /artists/events/{event_id}:
+    post:
+      tags:
+        - Artists
+      summary: Add artist to event (alt route)
+      description: Associate an artist with an event (alternative to /events/{id}/artists)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          description: Event ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - artist_id
+                - position
+              properties:
+                artist_id:
+                  type: integer
+                  format: int64
+                  example: 1
+                position:
+                  type: string
+                  example: "Headliner"
+                performance_time:
+                  type: string
+                  format: date-time
+                  example: "2025-07-15T20:00:00Z"
+      responses:
+        '201':
+          description: Artist added to event successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  artist:
+                    $ref: '#/components/schemas/Artist'
+        '404':
+          description: Event or artist not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /artists/events/{event_id}/{artist_id}:
+    delete:
+      tags:
+        - Artists
+      summary: Remove artist from event (alt route)
+      description: Remove an artist from an event (alternative to /events/{id}/artists/{artist_id})
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          description: Event ID
+          schema:
+            type: integer
+            format: int64
+        - name: artist_id
+          in: path
+          required: true
+          description: Artist ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Artist removed from event successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Event, artist, or association not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - Artists
+      summary: Update artist in event (alt route)
+      description: Update an artist's details in an event (alternative to /events/{id}/artists/{artist_id})
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          description: Event ID
+          schema:
+            type: integer
+            format: int64
+        - name: artist_id
+          in: path
+          required: true
+          description: Artist ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                position:
+                  type: string
+                  example: "Support"
+                performance_time:
+                  type: string
+                  format: date-time
+                  example: "2025-07-15T18:30:00Z"
+      responses:
+        '200':
+          description: Artist updated in event successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  eventArtist:
+                    type: object
+        '404':
+          description: Event, artist, or association not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  # Organizers API
+  /organizers:
+    get:
+      tags:
+        - Organizers
+      summary: Get all organizers
+      description: Retrieve a list of all organizers
+      responses:
+        '200':
+          description: A list of organizers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    email:
+                      type: string
+                      format: email
+                    bio:
+                      type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      tags:
+        - Organizers
+      summary: Create a new organizer
+      description: Add a new organizer to the system
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+              properties:
+                name:
+                  type: string
+                  example: "Organizer Name"
+                email:
+                  type: string
+                  format: email
+                  example: "contact@organizer.com"
+                bio:
+                  type: string
+                  example: "Organizer description"
+      responses:
+        '201':
+          description: Organizer created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  organizer:
+                    type: object
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /organizers/{id}:
+    get:
+      tags:
+        - Organizers
+      summary: Get organizer by ID
+      description: Retrieve a specific organizer's details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Organizer ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Organizer details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  bio:
+                    type: string
+        '404':
+          description: Organizer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - Organizers
+      summary: Update organizer
+      description: Update an existing organizer's information
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Organizer ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                bio:
+                  type: string
+      responses:
+        '200':
+          description: Organizer updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  organizer:
+                    type: object
+        '404':
+          description: Organizer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Organizers
+      summary: Delete organizer
+      description: Delete an organizer
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Organizer ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Organizer deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Organizer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /organizers/{id}/events:
+    get:
+      tags:
+        - Organizers
+      summary: Get organizer's events
+      description: Retrieve all events organized by this organizer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Organizer ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '404':
+          description: Organizer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  # Event Types API
+  /event-types:
+    get:
+      tags:
+        - Event Types
+      summary: Get all event types
+      description: Retrieve a list of all event types
+      responses:
+        '200':
+          description: A list of event types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventType'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      tags:
+        - Event Types
+      summary: Create a new event type
+      description: Add a new event type to the system
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: "Festival"
+                description:
+                  type: string
+                  example: "Multi-day music event"
+      responses:
+        '201':
+          description: Event type created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  eventType:
+                    $ref: '#/components/schemas/EventType'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /event-types/{id}:
+    get:
+      tags:
+        - Event Types
+      summary: Get event type by ID
+      description: Retrieve a specific event type's details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Event Type ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Event type details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventType'
+        '404':
+          description: Event type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - Event Types
+      summary: Update event type
+      description: Update an existing event type's information
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Event Type ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Event type updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  eventType:
+                    $ref: '#/components/schemas/EventType'
+        '404':
+          description: Event type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Event Types
+      summary: Delete event type
+      description: Delete an event type
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Event Type ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Event type deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Event type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /event-types/{id}/events:
+    get:
+      tags:
+        - Event Types
+      summary: Get events by type
+      description: Retrieve all events of a specific type
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Event Type ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '404':
+          description: Event type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  # Cities API
+  /cities:
+    get:
+      tags:
+        - Cities
+      summary: Get all cities
+      description: Retrieve a list of all cities
+      responses:
+        '200':
+          description: A list of cities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    country:
+                      type: string
+                    venues:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Venue'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+    post:
+      tags:
+        - Cities
+      summary: Create a new city
+      description: Add a new city to the system
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - country
+              properties:
+                name:
+                  type: string
+                  example: "Paris"
+                country:
+                  type: string
+                  example: "France"
+      responses:
+        '201':
+          description: City created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  city:
+                    type: object
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /cities/{id}:
+    get:
+      tags:
+        - Cities
+      summary: Get city by ID
+      description: Retrieve details of a specific city
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: City ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: City details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  country:
+                    type: string
+        '404':
+          description: City not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - Cities
+      summary: Update a city
+      description: Update an existing city's information
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: City ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                country:
+                  type: string
+      responses:
+        '200':
+          description: City updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  city:
+                    type: object
+        '404':
+          description: City not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Cities
+      summary: Delete a city
+      description: Remove a city from the system
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: City ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: City deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: City not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /cities/{id}/events:
+    get:
+      tags:
+        - Cities
+      summary: Get events in a city
+      description: Retrieve all events that take place in venues located in this city
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: City ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of events in the city
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '404':
+          description: City not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  # Venues API
+  /venues:
+    get:
+      tags:
+        - Venues
+      summary: Get all venues
+      description: Retrieve a list of all venues
+      responses:
+        '200':
+          description: A list of venues
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    address:
+                      type: string
+                    capacity:
+                      type: integer
+                    city:
+                      $ref: '#/components/schemas/City'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+    post:
+      tags:
+        - Venues
+      summary: Create a new venue
+      description: Add a new venue to the system
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - address
+                - city_id
+                - capacity
+              properties:
+                name:
+                  type: string
+                  example: "Olympia"
+                address:
+                  type: string
+                  example: "28 Boulevard des Capucines"
+                city_id:
+                  type: integer
+                  example: 1
+                capacity:
+                  type: integer
+                  example: 2000
+                description:
+                  type: string
+                  example: "Salle mythique de Paris"
+      responses:
+        '201':
+          description: Venue created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  venue:
+                    type: object
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /venues/{id}:
+    get:
+      tags:
+        - Venues
+      summary: Get venue by ID
+      description: Retrieve details of a specific venue
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Venue ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Venue details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  address:
+                    type: string
+                  capacity:
+                    type: integer
+                  city:
+                    $ref: '#/components/schemas/City'
+        '404':
+          description: Venue not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - Venues
+      summary: Update a venue
+      description: Update an existing venue's information
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Venue ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                city_id:
+                  type: integer
+                capacity:
+                  type: integer
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Venue updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  venue:
+                    type: object
+        '404':
+          description: Venue not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Venues
+      summary: Delete a venue
+      description: Remove a venue from the system
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Venue ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Venue deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Venue not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /venues/{id}/events:
+    get:
+      tags:
+        - Venues
+      summary: Get events at a venue
+      description: Retrieve all events that take place at this venue
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Venue ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of events at the venue
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '404':
+          description: Venue not found
           content:
             application/json:
               schema:

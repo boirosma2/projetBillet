@@ -1,22 +1,16 @@
 {
   "info": {
-    "_postman_id": "ticketing-platform-collection",
-    "name": "Ticketing Platform API",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "name": "SmartTicket Backend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Collection complète pour l'API SmartTicket Backend"
   },
-  "variable": [
-    {
-      "key": "token",
-      "value": "YOUR_JWT_TOKEN",
-      "type": "string"
-    }
-  ],
   "item": [
     {
       "name": "Auth",
+      "description": "Endpoints d'authentification",
       "item": [
         {
-          "name": "Register User",
+          "name": "Register",
           "request": {
             "method": "POST",
             "header": [
@@ -27,19 +21,18 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"username\": \"newuser\",\n    \"email\": \"newuser@example.com\",\n    \"password\": \"@Password123\"\n}"
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"Password123!\"\n}"
             },
             "url": {
-              "raw": "http://localhost:5000/api/auth/register",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "register"]
-            }
+            },
+            "description": "Inscription d'un nouvel utilisateur"
           }
         },
         {
-          "name": "Login User",
+          "name": "Login",
           "request": {
             "method": "POST",
             "header": [
@@ -50,52 +43,62 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}"
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Password123!\"\n}"
             },
             "url": {
-              "raw": "http://localhost:5000/api/auth/login",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "login"]
-            }
+            },
+            "description": "Connexion d'un utilisateur existant"
           }
         }
       ]
     },
     {
-      "name": "Cities",
+      "name": "Users",
+      "description": "Endpoints de gestion des utilisateurs",
       "item": [
         {
-          "name": "List Cities",
+          "name": "Get All Users",
           "request": {
             "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:5000/api/cities",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "cities"]
-            }
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Récupérer tous les utilisateurs (admin uniquement)"
           }
         },
         {
-          "name": "Get City by ID",
+          "name": "Get User by ID",
           "request": {
             "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:5000/api/cities/1",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "cities", "1"]
-            }
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1"]
+            },
+            "description": "Récupérer un utilisateur par ID"
           }
         },
         {
-          "name": "Create City",
+          "name": "Update User",
           "request": {
-            "method": "POST",
+            "method": "PUT",
             "header": [
               {
                 "key": "Content-Type",
@@ -103,58 +106,43 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Bordeaux\",\n    \"country\": \"France\"\n}"
+              "raw": "{\n  \"username\": \"updateduser\",\n  \"email\": \"updated@example.com\"\n}"
             },
             "url": {
-              "raw": "http://localhost:5000/api/cities",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "cities"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Venues",
-      "item": [
-        {
-          "name": "List Venues",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "http://localhost:5000/api/venues",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "venues"]
-            }
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1"]
+            },
+            "description": "Mettre à jour un utilisateur"
           }
         },
         {
-          "name": "Get Venue by ID",
+          "name": "Delete User",
           "request": {
-            "method": "GET",
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "http://localhost:5000/api/venues/1",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "venues", "1"]
-            }
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1"]
+            },
+            "description": "Supprimer un utilisateur (admin uniquement)"
           }
         },
         {
-          "name": "Create Venue",
+          "name": "Change User Status",
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Content-Type",
@@ -162,216 +150,55 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Salle Pleyel\",\n    \"address\": \"252 Rue du Faubourg Saint-Honoré, 75008 Paris\",\n    \"city_id\": 1,\n    \"capacity\": 1900,\n    \"description\": \"Une salle de concert historique située au cœur de Paris\"\n}"
+              "raw": "{\n  \"is_active\": false\n}"
             },
             "url": {
-              "raw": "http://localhost:5000/api/venues",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "venues"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Organizers",
-      "item": [
-        {
-          "name": "List Organizers",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "http://localhost:5000/api/organizers",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "organizers"]
-            }
+              "raw": "{{baseUrl}}/api/users/1/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1", "status"]
+            },
+            "description": "Changer le statut d'un utilisateur (admin uniquement)"
           }
         },
         {
-          "name": "Get Organizer by ID",
+          "name": "Get User Tickets",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "http://localhost:5000/api/organizers/1",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "organizers", "1"]
-            }
-          }
-        },
-        {
-          "name": "Create Organizer",
-          "request": {
-            "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
+                "value": "Bearer {{token}}"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Olympia Production\",\n    \"email\": \"contact@olympiaprod.fr\",\n    \"bio\": \"Producteur et organisateur d'événements musicaux\"\n}"
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1", "tickets"]
             },
-            "url": {
-              "raw": "http://localhost:5000/api/organizers",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "organizers"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Artists",
-      "item": [
-        {
-          "name": "List Artists",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "http://localhost:5000/api/artists",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "artists"]
-            }
-          }
-        },
-        {
-          "name": "Get Artist by ID",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "http://localhost:5000/api/artists/1",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "artists", "1"]
-            }
-          }
-        },
-        {
-          "name": "Create Artist",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"DJ Mixmaster\",\n    \"genre\": \"Électro\",\n    \"bio\": \"DJ pionnier de la scène électro française\"\n}"
-            },
-            "url": {
-              "raw": "http://localhost:5000/api/artists",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "artists"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Event Types",
-      "item": [
-        {
-          "name": "List Event Types",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "http://localhost:5000/api/event-types",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "event-types"]
-            }
-          }
-        },
-        {
-          "name": "Get Event Type by ID",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "http://localhost:5000/api/event-types/1",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "event-types", "1"]
-            }
-          }
-        },
-        {
-          "name": "Create Event Type",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"Exposition\",\n    \"description\": \"Exposition d'art ou de science\"\n}"
-            },
-            "url": {
-              "raw": "http://localhost:5000/api/event-types",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "event-types"]
-            }
+            "description": "Récupérer les tickets d'un utilisateur"
           }
         }
       ]
     },
     {
       "name": "Events",
+      "description": "Endpoints de gestion des événements",
       "item": [
         {
-          "name": "List Events",
+          "name": "Get All Events",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "http://localhost:5000/api/events",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
+              "raw": "{{baseUrl}}/api/events",
+              "host": ["{{baseUrl}}"],
               "path": ["api", "events"]
-            }
+            },
+            "description": "Récupérer tous les événements"
           }
         },
         {
@@ -379,12 +206,11 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "http://localhost:5000/api/events/1",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
+              "raw": "{{baseUrl}}/api/events/1",
+              "host": ["{{baseUrl}}"],
               "path": ["api", "events", "1"]
-            }
+            },
+            "description": "Récupérer un événement par ID"
           }
         },
         {
@@ -398,21 +224,63 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"Winter Jazz Festival\",\n    \"description\": \"Annual winter jazz concert\",\n    \"date\": \"2024-12-15 19:00:00\",\n    \"venue_id\": 1,\n    \"organizer_id\": 1,\n    \"event_type_id\": 1,\n    \"total_tickets\": 800,\n    \"price\": 75.50\n}"
+              "raw": "{\n  \"title\": \"Concert Test\",\n  \"description\": \"Description de l'événement\",\n  \"date\": \"2024-12-31T20:00:00.000Z\",\n  \"venue_id\": 1,\n  \"organizer_id\": 1,\n  \"event_type_id\": 1,\n  \"total_tickets\": 100,\n  \"price\": 50.00,\n  \"status\": \"upcoming\",\n  \"artists\": [\n    {\n      \"artist_id\": 1,\n      \"position\": \"Headliner\"\n    }\n  ]\n}"
             },
             "url": {
-              "raw": "http://localhost:5000/api/events",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
+              "raw": "{{baseUrl}}/api/events",
+              "host": ["{{baseUrl}}"],
               "path": ["api", "events"]
-            }
+            },
+            "description": "Créer un nouvel événement"
+          }
+        },
+        {
+          "name": "Update Event",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Concert Test Mis à Jour\",\n  \"price\": 60.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/events/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "1"]
+            },
+            "description": "Mettre à jour un événement"
+          }
+        },
+        {
+          "name": "Delete Event",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "1"]
+            },
+            "description": "Supprimer un événement"
           }
         },
         {
@@ -426,27 +294,70 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"artist_id\": 1,\n    \"position\": \"Headliner\",\n    \"performance_time\": \"2024-12-15 20:30:00\"\n}"
+              "raw": "{\n  \"artist_id\": 1,\n  \"position\": \"Support\"\n}"
             },
             "url": {
-              "raw": "http://localhost:5000/api/events/1/artists",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
+              "raw": "{{baseUrl}}/api/events/1/artists",
+              "host": ["{{baseUrl}}"],
               "path": ["api", "events", "1", "artists"]
-            }
+            },
+            "description": "Ajouter un artiste à un événement"
+          }
+        },
+        {
+          "name": "Update Artist in Event",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": \"Headliner\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/events/1/artists/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "1", "artists", "1"]
+            },
+            "description": "Mettre à jour un artiste dans un événement"
+          }
+        },
+        {
+          "name": "Remove Artist from Event",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/1/artists/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "1", "artists", "1"]
+            },
+            "description": "Supprimer un artiste d'un événement"
           }
         }
       ]
     },
     {
       "name": "Tickets",
+      "description": "Endpoints de gestion des tickets",
       "item": [
         {
           "name": "Purchase Ticket",
@@ -459,21 +370,19 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"event_id\": 1\n}"
+              "raw": "{\n  \"event_id\": 1\n}"
             },
             "url": {
-              "raw": "http://localhost:5000/api/tickets",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
+              "raw": "{{baseUrl}}/api/tickets",
+              "host": ["{{baseUrl}}"],
               "path": ["api", "tickets"]
-            }
+            },
+            "description": "Acheter un ticket pour un événement"
           }
         },
         {
@@ -483,114 +392,678 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
+                "value": "Bearer {{token}}"
               }
             ],
             "url": {
-              "raw": "http://localhost:5000/api/tickets/user",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
+              "raw": "{{baseUrl}}/api/tickets/user",
+              "host": ["{{baseUrl}}"],
               "path": ["api", "tickets", "user"]
-            }
+            },
+            "description": "Récupérer les tickets de l'utilisateur connecté"
+          }
+        },
+        {
+          "name": "Get Ticket by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tickets", "1"]
+            },
+            "description": "Récupérer un ticket par ID"
           }
         }
       ]
     },
     {
-      "name": "Banners",
+      "name": "Cities",
+      "description": "Endpoints de gestion des villes",
       "item": [
         {
-          "name": "Get Active Banner",
+          "name": "Get All Cities",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "http://localhost:5000/api/banners/active",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "banners", "active"]
-            }
+              "raw": "{{baseUrl}}/api/cities",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cities"]
+            },
+            "description": "Récupérer toutes les villes"
           }
         },
         {
-          "name": "Get All Banners",
+          "name": "Get City by ID",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
-              }
-            ],
             "url": {
-              "raw": "http://localhost:5000/api/banners",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "banners"]
-            }
+              "raw": "{{baseUrl}}/api/cities/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cities", "1"]
+            },
+            "description": "Récupérer une ville par ID"
           }
         },
         {
-          "name": "Create Banner",
+          "name": "Get City Events",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/cities/1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cities", "1", "events"]
+            },
+            "description": "Récupérer les événements d'une ville"
+          }
+        },
+        {
+          "name": "Create City",
           "request": {
             "method": "POST",
             "header": [
               {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
                 "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "image",
-                  "type": "file",
-                  "src": ""
-                },
-                {
-                  "key": "title",
-                  "value": "Summer Promotion",
-                  "type": "text"
-                },
-                {
-                  "key": "start_date",
-                  "value": "2024-06-01T00:00:00.000Z",
-                  "type": "text"
-                },
-                {
-                  "key": "end_date",
-                  "value": "2024-08-31T23:59:59.000Z",
-                  "type": "text"
-                },
-                {
-                  "key": "is_active",
-                  "value": "true",
-                  "type": "text"
-                },
-                {
-                  "key": "event_id",
-                  "value": "1",
-                  "type": "text",
-                  "disabled": true
-                }
-              ]
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bordeaux\",\n  \"country\": \"France\"\n}"
             },
             "url": {
-              "raw": "http://localhost:5000/api/banners",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "banners"]
-            }
+              "raw": "{{baseUrl}}/api/cities",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cities"]
+            },
+            "description": "Créer une nouvelle ville"
+          }
+        },
+        {
+          "name": "Update City",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bordeaux Mise à Jour\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cities/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cities", "1"]
+            },
+            "description": "Mettre à jour une ville"
+          }
+        },
+        {
+          "name": "Delete City",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cities/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cities", "1"]
+            },
+            "description": "Supprimer une ville"
           }
         }
       ]
+    },
+    {
+      "name": "Venues",
+      "description": "Endpoints de gestion des lieux",
+      "item": [
+        {
+          "name": "Get All Venues",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/venues",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues"]
+            },
+            "description": "Récupérer tous les lieux"
+          }
+        },
+        {
+          "name": "Get Venue by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "1"]
+            },
+            "description": "Récupérer un lieu par ID"
+          }
+        },
+        {
+          "name": "Get Venue Events",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "1", "events"]
+            },
+            "description": "Récupérer les événements d'un lieu"
+          }
+        },
+        {
+          "name": "Create Venue",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Le Krakatoa\",\n  \"address\": \"3 Avenue Victor Hugo\",\n  \"city_id\": 1,\n  \"capacity\": 1200,\n  \"description\": \"Salle de concert à Bordeaux\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues"]
+            },
+            "description": "Créer un nouveau lieu"
+          }
+        },
+        {
+          "name": "Update Venue",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"capacity\": 1500\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "1"]
+            },
+            "description": "Mettre à jour un lieu"
+          }
+        },
+        {
+          "name": "Delete Venue",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "1"]
+            },
+            "description": "Supprimer un lieu"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Organizers",
+      "description": "Endpoints de gestion des organisateurs",
+      "item": [
+        {
+          "name": "Get All Organizers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/organizers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organizers"]
+            },
+            "description": "Récupérer tous les organisateurs"
+          }
+        },
+        {
+          "name": "Get Organizer by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/organizers/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organizers", "1"]
+            },
+            "description": "Récupérer un organisateur par ID"
+          }
+        },
+        {
+          "name": "Get Organizer Events",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/organizers/1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organizers", "1", "events"]
+            },
+            "description": "Récupérer les événements d'un organisateur"
+          }
+        },
+        {
+          "name": "Create Organizer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nouvel Organisateur\",\n  \"email\": \"organizer@example.com\",\n  \"bio\": \"Description de l'organisateur\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/organizers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organizers"]
+            },
+            "description": "Créer un nouvel organisateur"
+          }
+        },
+        {
+          "name": "Update Organizer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Nouvelle description de l'organisateur\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/organizers/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organizers", "1"]
+            },
+            "description": "Mettre à jour un organisateur"
+          }
+        },
+        {
+          "name": "Delete Organizer",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organizers/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organizers", "1"]
+            },
+            "description": "Supprimer un organisateur"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Event Types",
+      "description": "Endpoints de gestion des types d'événements",
+      "item": [
+        {
+          "name": "Get All Event Types",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/event-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "event-types"]
+            },
+            "description": "Récupérer tous les types d'événements"
+          }
+        },
+        {
+          "name": "Get Event Type by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/event-types/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "event-types", "1"]
+            },
+            "description": "Récupérer un type d'événement par ID"
+          }
+        },
+        {
+          "name": "Get Event Type Events",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/event-types/1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "event-types", "1", "events"]
+            },
+            "description": "Récupérer les événements d'un type d'événement"
+          }
+        },
+        {
+          "name": "Create Event Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Salon\",\n  \"description\": \"Salon professionnel ou grand public\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/event-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "event-types"]
+            },
+            "description": "Créer un nouveau type d'événement"
+          }
+        },
+        {
+          "name": "Update Event Type",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Salon professionnel ou grand public mis à jour\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/event-types/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "event-types", "1"]
+            },
+            "description": "Mettre à jour un type d'événement"
+          }
+        },
+        {
+          "name": "Delete Event Type",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/event-types/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "event-types", "1"]
+            },
+            "description": "Supprimer un type d'événement"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Artists",
+      "description": "Endpoints de gestion des artistes",
+      "item": [
+        {
+          "name": "Get All Artists",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/artists",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "artists"]
+            },
+            "description": "Récupérer tous les artistes"
+          }
+        },
+        {
+          "name": "Get Artist by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "artists", "1"]
+            },
+            "description": "Récupérer un artiste par ID"
+          }
+        },
+        {
+          "name": "Get Artist Events",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "artists", "1", "events"]
+            },
+            "description": "Récupérer les événements d'un artiste"
+          }
+        },
+        {
+          "name": "Create Artist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nouvel Artiste\",\n  \"genre\": \"Pop/Rock\",\n  \"bio\": \"Biographie de l'artiste\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/artists",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "artists"]
+            },
+            "description": "Créer un nouvel artiste"
+          }
+        },
+        {
+          "name": "Update Artist",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Nouvelle biographie de l'artiste\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "artists", "1"]
+            },
+            "description": "Mettre à jour un artiste"
+          }
+        },
+        {
+          "name": "Delete Artist",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "artists", "1"]
+            },
+            "description": "Supprimer un artiste"
+          }
+        },
+        {
+          "name": "Add Artist to Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"artist_id\": 1,\n  \"position\": \"Support\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/events/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "artists", "events", "1"]
+            },
+            "description": "Ajouter un artiste à un événement"
+          }
+        },
+        {
+          "name": "Update Artist in Event",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": \"Headliner\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/events/1/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "artists", "events", "1", "1"]
+            },
+            "description": "Mettre à jour un artiste dans un événement"
+          }
+        },
+        {
+          "name": "Remove Artist from Event",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/events/1/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "artists", "events", "1", "1"]
+            },
+            "description": "Supprimer un artiste d'un événement"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "YOUR_TOKEN_HERE",
+      "type": "string"
     }
   ]
 }

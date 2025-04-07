@@ -12,7 +12,12 @@ import { sequelize } from './config/database.js'
 import authRoutes from './routes/auth.js'
 import eventsRoutes from './routes/events.js'
 import ticketsRoutes from './routes/tickets.js'
-import bannersRoutes from './routes/banners.js'
+import citiesRoutes from './routes/cities.js'
+import venuesRoutes from './routes/venues.js'
+import organizersRoutes from './routes/organizers.js'
+import eventTypesRoutes from './routes/eventTypes.js'
+import artistsRoutes from './routes/artists.js'
+import usersRoutes from './routes/users.js'
 
 // Importer les modèles pour s'assurer que les associations sont établies
 import './models/index.js'
@@ -34,8 +39,7 @@ app.use(helmet({
 app.use(express.json())
 app.use(morgan('dev'))
 
-// Servir les fichiers statiques
-app.use('/uploads', express.static(join(__dirname, 'public/uploads')))
+// Supprimé : servir les fichiers statiques (uploads)
 
 // Limitation de requêtes
 const limiter = rateLimit({
@@ -54,7 +58,12 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 app.use('/api/auth', authRoutes)
 app.use('/api/events', eventsRoutes)
 app.use('/api/tickets', ticketsRoutes)
-app.use('/api/banners', bannersRoutes)
+app.use('/api/cities', citiesRoutes)
+app.use('/api/venues', venuesRoutes)
+app.use('/api/organizers', organizersRoutes)
+app.use('/api/event-types', eventTypesRoutes)
+app.use('/api/artists', artistsRoutes)
+app.use('/api/users', usersRoutes)
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {

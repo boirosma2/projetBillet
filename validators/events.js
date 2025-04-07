@@ -1,6 +1,8 @@
 import Joi from 'joi';
 
-// Schéma de validation pour la création d'un événement
+/**
+ * Schéma pour la création d'un événement
+ */
 export const createEventSchema = Joi.object({
   title: Joi.string().min(3).max(100).required()
     .messages({
@@ -11,7 +13,7 @@ export const createEventSchema = Joi.object({
       'any.required': 'Le titre est requis'
     }),
   
-  description: Joi.string().min(10).max(500).required()
+  description: Joi.string().min(10).max(2000).required()
     .messages({
       'string.base': 'La description doit être une chaîne de caractères',
       'string.empty': 'La description ne peut pas être vide',
@@ -27,25 +29,26 @@ export const createEventSchema = Joi.object({
       'any.required': 'La date est requise'
     }),
   
-  venue_id: Joi.number().integer().required()
+  venue_id: Joi.number().integer().positive().required()
     .messages({
       'number.base': 'L\'ID du lieu doit être un nombre',
       'number.integer': 'L\'ID du lieu doit être un entier',
+      'number.positive': 'L\'ID du lieu doit être positif',
       'any.required': 'L\'ID du lieu est requis'
     }),
     
-  organizer_id: Joi.number().integer().required()
+  organizer_id: Joi.number().integer().positive().allow(null)
     .messages({
       'number.base': 'L\'ID de l\'organisateur doit être un nombre',
       'number.integer': 'L\'ID de l\'organisateur doit être un entier',
-      'any.required': 'L\'ID de l\'organisateur est requis'
+      'number.positive': 'L\'ID de l\'organisateur doit être positif'
     }),
     
-  event_type_id: Joi.number().integer().required()
+  event_type_id: Joi.number().integer().positive().allow(null)
     .messages({
       'number.base': 'L\'ID du type d\'événement doit être un nombre',
       'number.integer': 'L\'ID du type d\'événement doit être un entier',
-      'any.required': 'L\'ID du type d\'événement est requis'
+      'number.positive': 'L\'ID du type d\'événement doit être positif'
     }),
   
   total_tickets: Joi.number().integer().min(1).required()
@@ -72,10 +75,39 @@ export const createEventSchema = Joi.object({
       'number.precision': 'Le prix ne peut avoir que 2 décimales maximum',
       'number.min': 'Le prix ne peut pas être négatif',
       'any.required': 'Le prix est requis'
+    }),
+    
+  image_path: Joi.string().allow('', null)
+    .messages({
+      'string.base': 'Le chemin de l\'image doit être une chaîne de caractères'
+    }),
+    
+  artists: Joi.array().items(
+    Joi.object({
+      artist_id: Joi.number().integer().positive().required()
+        .messages({
+          'number.base': 'L\'ID de l\'artiste doit être un nombre',
+          'number.integer': 'L\'ID de l\'artiste doit être un entier',
+          'number.positive': 'L\'ID de l\'artiste doit être positif',
+          'any.required': 'L\'ID de l\'artiste est obligatoire'
+        }),
+      position: Joi.string().max(50).allow('', null)
+        .messages({
+          'string.base': 'La position doit être une chaîne de caractères',
+          'string.max': 'La position ne doit pas dépasser {#limit} caractères'
+        }),
+      performance_time: Joi.date().iso().allow(null)
+        .messages({
+          'date.base': 'L\'heure de passage doit être une date valide',
+          'date.format': 'L\'heure de passage doit être au format ISO 8601'
+        })
     })
+  ).allow(null)
 });
 
-// Schéma de validation pour la mise à jour d'un événement
+/**
+ * Schéma pour la mise à jour d'un événement
+ */
 export const updateEventSchema = Joi.object({
   title: Joi.string().min(3).max(100)
     .messages({
@@ -85,7 +117,7 @@ export const updateEventSchema = Joi.object({
       'string.max': 'Le titre ne doit pas dépasser {#limit} caractères'
     }),
   
-  description: Joi.string().min(10).max(500)
+  description: Joi.string().min(10).max(2000)
     .messages({
       'string.base': 'La description doit être une chaîne de caractères',
       'string.empty': 'La description ne peut pas être vide',
@@ -99,22 +131,25 @@ export const updateEventSchema = Joi.object({
       'date.greater': 'La date doit être ultérieure à aujourd\'hui'
     }),
   
-  venue_id: Joi.number().integer()
+  venue_id: Joi.number().integer().positive()
     .messages({
       'number.base': 'L\'ID du lieu doit être un nombre',
-      'number.integer': 'L\'ID du lieu doit être un entier'
+      'number.integer': 'L\'ID du lieu doit être un entier',
+      'number.positive': 'L\'ID du lieu doit être positif'
     }),
     
-  organizer_id: Joi.number().integer()
+  organizer_id: Joi.number().integer().positive().allow(null)
     .messages({
       'number.base': 'L\'ID de l\'organisateur doit être un nombre',
-      'number.integer': 'L\'ID de l\'organisateur doit être un entier'
+      'number.integer': 'L\'ID de l\'organisateur doit être un entier',
+      'number.positive': 'L\'ID de l\'organisateur doit être positif'
     }),
     
-  event_type_id: Joi.number().integer()
+  event_type_id: Joi.number().integer().positive().allow(null)
     .messages({
       'number.base': 'L\'ID du type d\'événement doit être un nombre',
-      'number.integer': 'L\'ID du type d\'événement doit être un entier'
+      'number.integer': 'L\'ID du type d\'événement doit être un entier',
+      'number.positive': 'L\'ID du type d\'événement doit être positif'
     }),
   
   total_tickets: Joi.number().integer().min(1)
@@ -138,5 +173,59 @@ export const updateEventSchema = Joi.object({
       'number.base': 'Le prix doit être un nombre',
       'number.precision': 'Le prix ne peut avoir que 2 décimales maximum',
       'number.min': 'Le prix ne peut pas être négatif'
+    }),
+    
+  image_path: Joi.string().allow('', null)
+    .messages({
+      'string.base': 'Le chemin de l\'image doit être une chaîne de caractères'
+    }),
+    
+  status: Joi.string().valid('upcoming', 'active', 'completed', 'cancelled')
+    .messages({
+      'string.base': 'Le statut doit être une chaîne de caractères',
+      'string.empty': 'Le statut ne peut pas être vide',
+      'any.only': 'Le statut doit être l\'un des suivants: upcoming, active, completed, cancelled'
+    })
+}).min(1).messages({ 'object.min': 'Au moins un champ doit être fourni pour la mise à jour' });
+
+/**
+ * Schéma pour l'ajout d'un artiste à un événement
+ */
+export const addArtistToEventSchema = Joi.object({
+  artist_id: Joi.number().integer().positive().required()
+    .messages({
+      'number.base': 'L\'ID de l\'artiste doit être un nombre',
+      'number.integer': 'L\'ID de l\'artiste doit être un entier',
+      'number.positive': 'L\'ID de l\'artiste doit être positif',
+      'any.required': 'L\'ID de l\'artiste est obligatoire'
+    }),
+  
+  position: Joi.string().max(50).allow('', null)
+    .messages({
+      'string.base': 'La position doit être une chaîne de caractères',
+      'string.max': 'La position ne doit pas dépasser {#limit} caractères'
+    }),
+  
+  performance_time: Joi.date().iso().allow(null)
+    .messages({
+      'date.base': 'L\'heure de passage doit être une date valide',
+      'date.format': 'L\'heure de passage doit être au format ISO 8601'
+    })
+});
+
+/**
+ * Schéma pour la mise à jour d'un artiste dans un événement
+ */
+export const updateEventArtistSchema = Joi.object({
+  position: Joi.string().max(50).allow('', null)
+    .messages({
+      'string.base': 'La position doit être une chaîne de caractères',
+      'string.max': 'La position ne doit pas dépasser {#limit} caractères'
+    }),
+  
+  performance_time: Joi.date().iso().allow(null)
+    .messages({
+      'date.base': 'L\'heure de passage doit être une date valide',
+      'date.format': 'L\'heure de passage doit être au format ISO 8601'
     })
 }).min(1).messages({ 'object.min': 'Au moins un champ doit être fourni pour la mise à jour' });

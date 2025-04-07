@@ -306,7 +306,6 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     // Supprimer toutes les données de démo (dans l'ordre inverse pour respecter les contraintes)
     await queryInterface.bulkDelete('tickets', null, {});
-    await queryInterface.bulkDelete('banners', null, {});
     await queryInterface.bulkDelete('event_artists', null, {});
     await queryInterface.bulkDelete('events', null, {});
     await queryInterface.bulkDelete('artists', null, {});
