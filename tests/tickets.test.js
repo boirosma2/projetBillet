@@ -69,7 +69,7 @@ describe('Tickets Routes', () => {
     }, 100);
   });
 
-  describe('POST /api/tickets', () => {
+  describe('POST /api/tickets/buy', () => {
     it('should purchase a ticket successfully', async () => {
       // Mock de l'événement avec des billets disponibles
       const mockEvent = {
@@ -93,17 +93,18 @@ describe('Tickets Routes', () => {
         event_id: 1,
         user_id: 1,
         purchase_date: new Date().toISOString(),
-        price: 20.00,
-        status: 'paid'
+        price_paid: 20.00,
+        status: 'paid',
+        ticket_code: 'TIX-ABC123'
       };
       
       // Configuration des mocks
-      Event.findOne.mockResolvedValue(mockEvent);
+      Event.findByPk.mockResolvedValue(mockEvent);
       User.findByPk.mockResolvedValue(mockUser);
       Ticket.create.mockResolvedValue(mockTicket);
       
       const response = await request(app)
-        .post('/api/tickets')
+        .post('/api/tickets/buy')
         .send({
           event_id: 1
         });
@@ -113,17 +114,17 @@ describe('Tickets Routes', () => {
       expect(response.body.ticket.event_id).toBe(1);
       expect(response.body.ticket.user_id).toBe(1);
       expect(response.body.ticket.status).toBe('paid');
-      expect(Event.findOne).toHaveBeenCalled();
+      expect(Event.findByPk).toHaveBeenCalled();
       expect(Ticket.create).toHaveBeenCalled();
       expect(mockEvent.save).toHaveBeenCalled();
     });
 
     it('should return 404 if event not found', async () => {
       // Mock de l'événement non trouvé
-      Event.findOne.mockResolvedValue(null);
+      Event.findByPk.mockResolvedValue(null);
       
       const response = await request(app)
-        .post('/api/tickets')
+        .post('/api/tickets/buy')
         .send({
           event_id: 999
         });
@@ -142,10 +143,10 @@ describe('Tickets Routes', () => {
         price: 20.00
       };
       
-      Event.findOne.mockResolvedValue(mockEvent);
+      Event.findByPk.mockResolvedValue(mockEvent);
       
       const response = await request(app)
-        .post('/api/tickets')
+        .post('/api/tickets/buy')
         .send({
           event_id: 1
         });

@@ -18,6 +18,7 @@ import organizersRoutes from './routes/organizers.js'
 import eventTypesRoutes from './routes/eventTypes.js'
 import artistsRoutes from './routes/artists.js'
 import usersRoutes from './routes/users.js'
+import bannersRoutes from './routes/banners.js'
 
 // Importer les modèles pour s'assurer que les associations sont établies
 import './models/index.js'
@@ -64,6 +65,10 @@ app.use('/api/organizers', organizersRoutes)
 app.use('/api/event-types', eventTypesRoutes)
 app.use('/api/artists', artistsRoutes)
 app.use('/api/users', usersRoutes)
+app.use('/api/banners', bannersRoutes)
+
+// Servir les fichiers statiques (uploads)
+app.use('/uploads', express.static(join(__dirname, 'public', 'uploads')))
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {

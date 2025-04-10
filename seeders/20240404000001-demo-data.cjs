@@ -301,10 +301,88 @@ module.exports = {
         `UPDATE events SET available_tickets = available_tickets - 1 WHERE id = ${events[1].id}`
       );
     }
+
+    // 14. Ajouter des bannières promotionnelles de démo
+    if (events.length > 0) {
+      await queryInterface.bulkInsert('banners', [
+        {
+          title: 'Festival d\'été 2025',
+          description: 'Ne manquez pas le plus grand festival de l\'année ! 3 jours de musique non-stop.',
+          image_path: '/uploads/demo-banner1.jpg',
+          event_id: events[1].id,
+          is_active: true,
+          start_date: new Date(),
+          end_date: new Date(new Date().setMonth(new Date().getMonth() + 3)),
+          display_order: 1,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          title: 'Concert de Jazz',
+          description: 'Soirée jazz exceptionnelle avec les meilleurs musiciens de la région.',
+          image_path: '/uploads/demo-banner2.jpg',
+          event_id: events[0].id,
+          is_active: false,
+          start_date: new Date(new Date().setDate(new Date().getDate() + 15)),
+          end_date: new Date(new Date().setMonth(new Date().getMonth() + 2)),
+          display_order: 2,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          title: 'Promotion du mois',
+          description: '20% de réduction sur tous les événements ce mois-ci. Utilisez le code PROMO20.',
+          image_path: '/uploads/demo-banner3.jpg',
+          event_id: null,
+          is_active: false,
+          start_date: new Date(),
+          end_date: new Date(new Date().setDate(new Date().getDate() + 30)),
+          display_order: 3,
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+      ], {});
+
+      // 15. Ajouter quelques clics de démonstration sur les bannières
+      const banners = await queryInterface.sequelize.query(
+        'SELECT id FROM banners;',
+        { type: queryInterface.sequelize.QueryTypes.SELECT }
+      );
+
+      if (banners.length > 0 && users.length > 0) {
+        const clicksData = [];
+        
+        // Ajouter des clics pour la première bannière (par un utilisateur connecté)
+        for (let i = 0; i < 5; i++) {
+          clicksData.push({
+            banner_id: banners[0].id,
+            user_id: users[0].id,
+            ip_address: '127.0.0.1',
+            user_agent: 'Mozilla/5.0 (Demo Browser)',
+            clicked_at: new Date(new Date().setDate(new Date().getDate() - i))
+          });
+        }
+        
+        // Ajouter des clics pour la deuxième bannière (visiteurs anonymes)
+        for (let i = 0; i < 3; i++) {
+          clicksData.push({
+            banner_id: banners[1].id,
+            user_id: null,
+            ip_address: '192.168.1.1',
+            user_agent: 'Mozilla/5.0 (Demo Mobile Browser)',
+            clicked_at: new Date(new Date().setDate(new Date().getDate() - i))
+          });
+        }
+        
+        await queryInterface.bulkInsert('banner_clicks', clicksData, {});
+      }
+    }
   },
 
   async down(queryInterface, Sequelize) {
     // Supprimer toutes les données de démo (dans l'ordre inverse pour respecter les contraintes)
+    await queryInterface.bulkDelete('banner_clicks', null, {});
+    await queryInterface.bulkDelete('banners', null, {});
     await queryInterface.bulkDelete('tickets', null, {});
     await queryInterface.bulkDelete('event_artists', null, {});
     await queryInterface.bulkDelete('events', null, {});

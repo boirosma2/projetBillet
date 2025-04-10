@@ -1,6 +1,7 @@
 import request from 'supertest';
 import express from 'express';
-import { Event, Venue, Organizer, EventType, Artist, EventArtist, sequelize } from '../models/index.js';
+import { Event, Venue, Organizer, EventType, Artist, EventArtist } from '../models/index.js';
+import { sequelize } from '../config/database.js';
 import eventsRoutes from '../routes/events.js';
 import { authMiddleware } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
@@ -17,6 +18,19 @@ jest.mock('../middleware/auth.js', () => ({
     next();
   })
 }));
+
+jest.mock('../config/database.js', () => {
+  const mockTransaction = {
+    commit: jest.fn(),
+    rollback: jest.fn()
+  };
+  
+  return {
+    sequelize: {
+      transaction: jest.fn().mockResolvedValue(mockTransaction)
+    }
+  };
+});
 
 jest.mock('../models/index.js', () => {
   // Mock pour Event
@@ -56,25 +70,13 @@ jest.mock('../models/index.js', () => {
     destroy: jest.fn()
   };
   
-  // Mock pour Transaction
-  const mockTransaction = {
-    commit: jest.fn(),
-    rollback: jest.fn()
-  };
-  
-  // Mock pour Sequelize
-  const mockSequelize = {
-    transaction: jest.fn().mockResolvedValue(mockTransaction)
-  };
-  
   return {
     Event: mockEvent,
     Venue: mockVenue,
     Organizer: mockOrganizer,
     EventType: mockEventType,
     Artist: mockArtist,
-    EventArtist: mockEventArtist,
-    sequelize: mockSequelize
+    EventArtist: mockEventArtist
   };
 });
 

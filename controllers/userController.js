@@ -247,12 +247,9 @@ export const getUserTickets = async (req, res) => {
       include: [{
         model: Event,
         as: 'event',
-        include: [
-          { association: 'venue' },
-          { association: 'eventType' }
-        ]
+        attributes: ['id', 'title', 'date', 'price', 'available_tickets', 'status']
       }],
-      order: [['purchase_date', 'DESC']]
+      order: [['created_at', 'DESC']]
     });
     
     res.json(tickets);

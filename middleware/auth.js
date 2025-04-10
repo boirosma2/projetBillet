@@ -20,12 +20,17 @@ export const authMiddleware = (req, res, next) => {
     // Vérifier et décoder le token
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
     
+    console.log('Token décodé:', decoded) // Pour débugger
+    
     // Ajouter les informations de l'utilisateur à la requête
     req.user = {
       id: decoded.id,
-      email: decoded.email
+      email: decoded.email,
+      role: decoded.role // Ajouter le rôle depuis le token
     }
 
+    console.log('req.user:', req.user) // Pour débugger
+    
     // Passer au middleware suivant
     next()
   } catch (error) {

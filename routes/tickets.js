@@ -8,7 +8,7 @@ import { sequelize } from '../config/database.js'
 const router = express.Router()
 
 // Acheter un ticket (avec validation)
-router.post('/', authMiddleware, validate(purchaseTicketSchema), async (req, res) => {
+router.post('/buy', authMiddleware, validate(purchaseTicketSchema), async (req, res) => {
   // Utiliser une transaction pour garantir l'intégrité des données
   const transaction = await sequelize.transaction();
   
@@ -23,8 +23,7 @@ router.post('/', authMiddleware, validate(purchaseTicketSchema), async (req, res
     const user_id = req.user.id
 
     // Vérifier la disponibilité de l'événement (avec verrouillage pour éviter les conflits)
-    const event = await Event.findOne({
-      where: { id: event_id },
+    const event = await Event.findByPk(event_id, {
       lock: transaction.LOCK.UPDATE,
       transaction
     });
@@ -126,7 +125,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
         {
           model: Event,
           as: 'event',
-          attributes: ['id', 'title', 'description', 'date', 'venue', 'price']
+          attributes: ['id', 'title', 'description', 'date', 'price', 'image_path', 'available_tickets']
         },
         {
           model: User,

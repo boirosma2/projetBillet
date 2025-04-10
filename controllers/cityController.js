@@ -67,9 +67,14 @@ export const getCityEvents = async (req, res) => {
   }
 };
 
-// Créer une nouvelle ville
+// Créer une nouvelle ville (admin uniquement)
 export const createCity = async (req, res) => {
   try {
+    // Vérifier que l'utilisateur est admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Accès non autorisé. Seuls les administrateurs peuvent créer des villes.' });
+    }
+
     const { name, country } = req.body;
     
     const city = await City.create({
@@ -93,9 +98,14 @@ export const createCity = async (req, res) => {
   }
 };
 
-// Mettre à jour une ville
+// Mettre à jour une ville (admin uniquement)
 export const updateCity = async (req, res) => {
   try {
+    // Vérifier que l'utilisateur est admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Accès non autorisé. Seuls les administrateurs peuvent modifier des villes.' });
+    }
+
     const { id } = req.params;
     
     const city = await City.findByPk(id);
@@ -131,9 +141,14 @@ export const updateCity = async (req, res) => {
   }
 };
 
-// Supprimer une ville
+// Supprimer une ville (admin uniquement)
 export const deleteCity = async (req, res) => {
   try {
+    // Vérifier que l'utilisateur est admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Accès non autorisé. Seuls les administrateurs peuvent supprimer des villes.' });
+    }
+
     const { id } = req.params;
     
     const city = await City.findByPk(id);

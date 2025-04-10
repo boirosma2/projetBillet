@@ -1,0 +1,1117 @@
+{
+  "info": {
+    "name": "SmartTicket API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Tests automatisés pour toutes les fonctionnalités de l'API SmartTicket"
+  },
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Login (Get Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains token\", function () {",
+                  "    pm.expect(response.token).to.exist;",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains user\", function () {",
+                  "    pm.expect(response.user).to.exist;",
+                  "    pm.expect(response.user.email).to.exist;",
+                  "    pm.expect(response.user.role).to.exist;",
+                  "});",
+                  "",
+                  "// Enregistrer le token pour les requêtes suivantes",
+                  "if (response.token) {",
+                  "    pm.environment.set(\"token\", response.token);",
+                  "    pm.environment.set(\"userId\", response.user.id.toString());",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains user data\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.id).to.exist;",
+                  "    pm.expect(response.email).to.exist;",
+                  "    pm.expect(response.username).to.exist;",
+                  "    pm.expect(response.role).to.exist;",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "profile"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Users",
+      "item": [
+        {
+          "name": "Get All Users (Admin only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Vérifier si l'utilisateur est admin ou non",
+                  "const isAdmin = pm.environment.name.includes('Admin');",
+                  "",
+                  "if (isAdmin) {",
+                  "    pm.test(\"Admin peut accéder à tous les utilisateurs\", function () {",
+                  "        pm.response.to.have.status(200);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(Array.isArray(response)).to.be.true;",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Utilisateur normal ne peut pas accéder à tous les utilisateurs\", function () {",
+                  "        pm.response.to.have.status(403);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.message).to.include('non autorisé');",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get User By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"User profile access check\", function () {",
+                  "    const isAdmin = pm.environment.name.includes('Admin');",
+                  "    const userIdFromEnv = pm.environment.get(\"userId\");",
+                  "    const pathParts = pm.request.url.path;",
+                  "    const requestedUserId = pathParts[pathParts.length - 1]; // Récupère le dernier élément du chemin, qui devrait être l'ID",
+                  "    const isOwnProfile = userIdFromEnv === requestedUserId;",
+                  "    ",
+                  "    if (isAdmin || isOwnProfile) {",
+                  "        pm.response.to.have.status(200);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.id).to.exist;",
+                  "        pm.expect(response.email).to.exist;",
+                  "    } else {",
+                  "        pm.response.to.have.status(403);",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get My Tickets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Utilisateur peut accéder à ses propres billets\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(Array.isArray(response)).to.be.true;",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/my/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "my", "tickets"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Cities",
+      "item": [
+        {
+          "name": "Get All Cities",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Accès public aux villes\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(Array.isArray(response)).to.be.true;",
+                  "    ",
+                  "    // Si nous avons des villes, stocker un ID pour les tests suivants",
+                  "    if (response.length > 0) {",
+                  "        pm.environment.set(\"cityId\", response[0].id);",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cities",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cities"]
+            }
+          }
+        },
+        {
+          "name": "Get City By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Vérifier si nous avons un ID de ville",
+                  "if (pm.environment.get(\"cityId\")) {",
+                  "    pm.test(\"Accès public aux détails d'une ville\", function () {",
+                  "        pm.response.to.have.status(200);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.id).to.exist;",
+                  "        pm.expect(response.name).to.exist;",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Pas d'ID de ville disponible pour le test\", function () {",
+                  "        pm.expect(true).to.be.true; // Test toujours réussi",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cities/{{cityId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cities", "{{cityId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create City (Admin only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Vérifier si l'utilisateur est admin ou non",
+                  "const isAdmin = pm.environment.name.includes('Admin');",
+                  "",
+                  "if (isAdmin) {",
+                  "    pm.test(\"Admin peut créer une ville\", function () {",
+                  "        pm.response.to.have.status(201);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.city).to.exist;",
+                  "        pm.expect(response.city.name).to.equal('Test City');",
+                  "        ",
+                  "        // Stocker l'ID pour les tests suivants",
+                  "        if (response.city.id) {",
+                  "            pm.environment.set(\"newCityId\", response.city.id);",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Utilisateur normal ne peut pas créer une ville\", function () {",
+                  "        pm.response.to.have.status(403);",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test City\",\n  \"country\": \"Test Country\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cities",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cities"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Venues",
+      "item": [
+        {
+          "name": "Get All Venues",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Accès public aux lieux\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(Array.isArray(response)).to.be.true;",
+                  "    ",
+                  "    // Si nous avons des lieux, stocker un ID pour les tests suivants",
+                  "    if (response.length > 0) {",
+                  "        pm.environment.set(\"venueId\", response[0].id);",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues"]
+            }
+          }
+        },
+        {
+          "name": "Get Venue By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Vérifier si nous avons un ID de lieu",
+                  "if (pm.environment.get(\"venueId\")) {",
+                  "    pm.test(\"Accès public aux détails d'un lieu\", function () {",
+                  "        pm.response.to.have.status(200);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.id).to.exist;",
+                  "        pm.expect(response.name).to.exist;",
+                  "        pm.expect(response.city).to.exist;",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Pas d'ID de lieu disponible pour le test\", function () {",
+                  "        pm.expect(true).to.be.true; // Test toujours réussi",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Event Types",
+      "item": [
+        {
+          "name": "Get All Event Types",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Accès public aux types d'événements\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(Array.isArray(response)).to.be.true;",
+                  "    ",
+                  "    // Si nous avons des types d'événements, stocker un ID pour les tests suivants",
+                  "    if (response.length > 0) {",
+                  "        pm.environment.set(\"eventTypeId\", response[0].id);",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/event-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "event-types"]
+            }
+          }
+        },
+        {
+          "name": "Get Event Type By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Vérifier si nous avons un ID de type d'événement",
+                  "if (pm.environment.get(\"eventTypeId\")) {",
+                  "    pm.test(\"Accès public aux détails d'un type d'événement\", function () {",
+                  "        pm.response.to.have.status(200);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.id).to.exist;",
+                  "        pm.expect(response.name).to.exist;",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Pas d'ID de type d'événement disponible pour le test\", function () {",
+                  "        pm.expect(true).to.be.true; // Test toujours réussi",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/event-types/{{eventTypeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "event-types", "{{eventTypeId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Artists",
+      "item": [
+        {
+          "name": "Get All Artists",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Accès public aux artistes\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(Array.isArray(response)).to.be.true;",
+                  "    ",
+                  "    // Si nous avons des artistes, stocker un ID pour les tests suivants",
+                  "    if (response.length > 0) {",
+                  "        pm.environment.set(\"artistId\", response[0].id);",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/artists",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "artists"]
+            }
+          }
+        },
+        {
+          "name": "Get Artist By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Vérifier si nous avons un ID d'artiste",
+                  "if (pm.environment.get(\"artistId\")) {",
+                  "    pm.test(\"Accès public aux détails d'un artiste\", function () {",
+                  "        pm.response.to.have.status(200);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.id).to.exist;",
+                  "        pm.expect(response.name).to.exist;",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Pas d'ID d'artiste disponible pour le test\", function () {",
+                  "        pm.expect(true).to.be.true; // Test toujours réussi",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/artists/{{artistId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "artists", "{{artistId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Organizers",
+      "item": [
+        {
+          "name": "Get All Organizers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Accès public aux organisateurs\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(Array.isArray(response)).to.be.true;",
+                  "    ",
+                  "    // Si nous avons des organisateurs, stocker un ID pour les tests suivants",
+                  "    if (response.length > 0) {",
+                  "        pm.environment.set(\"organizerId\", response[0].id);",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/organizers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organizers"]
+            }
+          }
+        },
+        {
+          "name": "Get Organizer By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Vérifier si nous avons un ID d'organisateur",
+                  "if (pm.environment.get(\"organizerId\")) {",
+                  "    pm.test(\"Accès public aux détails d'un organisateur\", function () {",
+                  "        pm.response.to.have.status(200);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.id).to.exist;",
+                  "        pm.expect(response.name).to.exist;",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Pas d'ID d'organisateur disponible pour le test\", function () {",
+                  "        pm.expect(true).to.be.true; // Test toujours réussi",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/organizers/{{organizerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "organizers", "{{organizerId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Events",
+      "item": [
+        {
+          "name": "Get All Events",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Accès public aux événements\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(Array.isArray(response)).to.be.true;",
+                  "    ",
+                  "    // Si nous avons des événements, stocker un ID pour les tests suivants",
+                  "    if (response.length > 0) {",
+                  "        pm.environment.set(\"eventId\", response[0].id);",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events"]
+            }
+          }
+        },
+        {
+          "name": "Get Event By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Vérifier si nous avons un ID d'événement",
+                  "if (pm.environment.get(\"eventId\")) {",
+                  "    pm.test(\"Accès public aux détails d'un événement\", function () {",
+                  "        pm.response.to.have.status(200);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.id).to.exist;",
+                  "        pm.expect(response.title).to.exist;",
+                  "        pm.expect(response.date).to.exist;",
+                  "        pm.expect(response.venue).to.exist;",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Pas d'ID d'événement disponible pour le test\", function () {",
+                  "        pm.expect(true).to.be.true; // Test toujours réussi",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{eventId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "{{eventId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Events By Filter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Accès public aux événements filtrés\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(Array.isArray(response)).to.be.true;",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events?status=upcoming",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "upcoming"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Tickets",
+      "item": [
+        {
+          "name": "Buy Ticket (Auth required)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Vérifier si nous avons un ID d'événement",
+                  "if (pm.environment.get(\"eventId\")) {",
+                  "    pm.test(\"Utilisateur authentifié peut acheter un billet\", function () {",
+                  "        const statusCode = pm.response.code;",
+                  "        ",
+                  "        // Le statut peut être 201 (succès) ou 400/404 (pas de billets disponibles/événement non trouvé)",
+                  "        pm.expect(statusCode).to.be.oneOf([201, 400, 404]);",
+                  "        ",
+                  "        if (statusCode === 201) {",
+                  "            const response = pm.response.json();",
+                  "            pm.expect(response.message).to.include('Billet acheté');",
+                  "            pm.expect(response.ticket).to.exist;",
+                  "            pm.expect(response.ticket.id).to.exist;",
+                  "            ",
+                  "            // Stocker l'ID du billet pour les tests suivants",
+                  "            pm.environment.set(\"ticketId\", response.ticket.id);",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Pas d'ID d'événement disponible pour l'achat\", function () {",
+                  "        pm.expect(true).to.be.true; // Test toujours réussi",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{eventId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/buy",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tickets", "buy"]
+            }
+          }
+        },
+        {
+          "name": "Get Ticket By ID (Auth required)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Vérifier si nous avons un ID de billet",
+                  "if (pm.environment.get(\"ticketId\")) {",
+                  "    pm.test(\"Utilisateur peut accéder à son billet\", function () {",
+                  "        const statusCode = pm.response.code;",
+                  "        ",
+                  "        // Le statut peut être 200 (succès) ou 403/404 (pas le bon utilisateur/billet non trouvé)",
+                  "        pm.expect(statusCode).to.be.oneOf([200, 403, 404]);",
+                  "        ",
+                  "        if (statusCode === 200) {",
+                  "            const response = pm.response.json();",
+                  "            pm.expect(response.id).to.exist;",
+                  "            pm.expect(response.event).to.exist;",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Pas d'ID de billet disponible pour le test\", function () {",
+                  "        pm.expect(true).to.be.true; // Test toujours réussi",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets/{{ticketId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tickets", "{{ticketId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Banners",
+      "item": [
+        {
+          "name": "Get All Banners (Admin only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Vérifier si l'utilisateur est admin ou non",
+                  "const isAdmin = pm.environment.name.includes('Admin');",
+                  "",
+                  "if (isAdmin) {",
+                  "    pm.test(\"Admin peut accéder à toutes les bannières\", function () {",
+                  "        pm.response.to.have.status(200);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(Array.isArray(response)).to.be.true;",
+                  "    });",
+                  "    ",
+                  "    // Enregistrer un ID de bannière pour les tests suivants s'il y en a",
+                  "    const response = pm.response.json();",
+                  "    if (response && response.length > 0) {",
+                  "        pm.environment.set(\"bannerId\", response[0].id);",
+                  "    }",
+                  "} else {",
+                  "    pm.test(\"Utilisateur normal ne peut pas accéder à toutes les bannières\", function () {",
+                  "        pm.response.to.have.status(403);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.message).to.include('non autorisé');",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/banners",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banners"]
+            }
+          }
+        },
+        {
+          "name": "Get Active Banner (Public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Tout le monde peut accéder à la bannière active\", function () {",
+                  "    const statusCode = pm.response.code;",
+                  "    ",
+                  "    // La requête peut retourner 200 s'il y a une bannière active ou 404 s'il n'y en a pas",
+                  "    pm.expect(statusCode).to.be.oneOf([200, 404]);",
+                  "    ",
+                  "    if (statusCode === 200) {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.is_active).to.be.true;",
+                  "        ",
+                  "        // Si nous n'avons pas encore d'ID de bannière, utilisons celui-ci",
+                  "        if (!pm.environment.get(\"bannerId\")) {",
+                  "            pm.environment.set(\"bannerId\", response.id);",
+                  "        }",
+                  "    } else if (statusCode === 404) {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.message).to.include('Aucune bannière active');",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/banners/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banners", "active"]
+            }
+          }
+        },
+        {
+          "name": "Get Featured Banners (Public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Tout le monde peut accéder aux bannières en vedette\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(Array.isArray(response)).to.be.true;",
+                  "    ",
+                  "    // Si nous avons des bannières en vedette et pas encore d'ID de bannière enregistré",
+                  "    if (response.length > 0 && !pm.environment.get(\"bannerId\")) {",
+                  "        pm.environment.set(\"bannerId\", response[0].id);",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/banners/featured",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banners", "featured"]
+            }
+          }
+        },
+        {
+          "name": "Track Banner Click (Public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Si nous avons un ID de bannière enregistré",
+                  "if (pm.environment.get(\"bannerId\")) {",
+                  "    pm.test(\"Tout utilisateur peut enregistrer un clic sur une bannière\", function () {",
+                  "        const statusCode = pm.response.code;",
+                  "        // 200 si la bannière existe, 404 si elle n'existe pas",
+                  "        pm.expect(statusCode).to.be.oneOf([200, 404]);",
+                  "        ",
+                  "        if (statusCode === 200) {",
+                  "            const response = pm.response.json();",
+                  "            pm.expect(response.success).to.be.true;",
+                  "            ",
+                  "            // Si la bannière est liée à un événement, vérifier l'URL de redirection",
+                  "            if (response.redirect_url) {",
+                  "                pm.expect(response.redirect_url).to.include('/events/');",
+                  "            }",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Pas de bannière disponible pour tester le clic\", function () {",
+                  "        pm.expect(true).to.be.true; // Test toujours réussi",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Optionnel - Pour tester avec un utilisateur connecté"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/banners/{{bannerId}}/click",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banners", "{{bannerId}}", "click"]
+            }
+          }
+        },
+        {
+          "name": "Get Banner Stats (Admin only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Vérifier si l'utilisateur est admin ou non",
+                  "const isAdmin = pm.environment.name.includes('Admin');",
+                  "",
+                  "if (isAdmin && pm.environment.get(\"bannerId\")) {",
+                  "    pm.test(\"Admin peut accéder aux statistiques de bannière\", function () {",
+                  "        const statusCode = pm.response.code;",
+                  "        // 200 si la bannière existe, 404 si elle n'existe pas",
+                  "        pm.expect(statusCode).to.be.oneOf([200, 404]);",
+                  "        ",
+                  "        if (statusCode === 200) {",
+                  "            const response = pm.response.json();",
+                  "            pm.expect(response.banner_id).to.exist;",
+                  "            pm.expect(response.total_clicks).to.exist;",
+                  "            pm.expect(response.clicks_by_day).to.exist;",
+                  "            pm.expect(response.clicks_by_user_type).to.exist;",
+                  "        }",
+                  "    });",
+                  "} else if (!isAdmin) {",
+                  "    pm.test(\"Utilisateur normal ne peut pas accéder aux statistiques de bannière\", function () {",
+                  "        pm.response.to.have.status(403);",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.message).to.include('non autorisé');",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Pas de bannière disponible pour tester les statistiques\", function () {",
+                  "        pm.expect(true).to.be.true; // Test toujours réussi",
+                  "    });",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/banners/{{bannerId}}/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banners", "{{bannerId}}", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

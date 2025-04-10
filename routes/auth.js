@@ -4,6 +4,7 @@ import validate from '../middleware/validate.js';
 import { registerSchema, loginSchema } from '../validators/auth.js';
 import { User } from '../models/index.js';
 import { sequelize } from '../config/database.js';
+import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -112,6 +113,32 @@ router.post('/login', validate(loginSchema), async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: 'Erreur de connexion', error: error.message });
+  }
+});
+
+// Route de test pour vérifier les informations utilisateur
+router.get('/me', authMiddleware, (req, res) => {
+  res.json({
+    message: 'Informations utilisateur',
+    user: req.user
+  });
+});
+
+// Route pour récupérer le profil complet de l'utilisateur
+router.get('/profile', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: { exclude: ['password'] }
+    });
+    
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération du profil', error: error.message });
   }
 });
 

@@ -1,8 +1,9 @@
 import request from 'supertest';
 import express from 'express';
-import { Artist, Event, EventArtist, sequelize } from '../models/index.js';
+import { Artist, Event, EventArtist } from '../models/index.js';
 import artistsRoutes from '../routes/artists.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { sequelize } from '../config/database.js';
 
 // Mock des middleware et modèles
 jest.mock('../middleware/auth.js', () => ({
@@ -12,6 +13,19 @@ jest.mock('../middleware/auth.js', () => ({
     next();
   })
 }));
+
+jest.mock('../config/database.js', () => {
+  const mockTransaction = {
+    commit: jest.fn(),
+    rollback: jest.fn()
+  };
+  
+  return {
+    sequelize: {
+      transaction: jest.fn().mockResolvedValue(mockTransaction)
+    }
+  };
+});
 
 jest.mock('../models/index.js', () => {
   const mockArtist = {
@@ -33,20 +47,10 @@ jest.mock('../models/index.js', () => {
     destroy: jest.fn()
   };
   
-  const mockTransaction = {
-    commit: jest.fn(),
-    rollback: jest.fn()
-  };
-  
-  const mockSequelize = {
-    transaction: jest.fn().mockResolvedValue(mockTransaction)
-  };
-  
   return {
     Artist: mockArtist,
     Event: mockEvent,
-    EventArtist: mockEventArtist,
-    sequelize: mockSequelize
+    EventArtist: mockEventArtist
   };
 });
 

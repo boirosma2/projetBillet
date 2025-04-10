@@ -9,6 +9,7 @@ import authRoutes from '../routes/auth.js';
 jest.mock('../models/index.js', () => {
   const mockUser = {
     findOne: jest.fn(),
+    findByPk: jest.fn(), // Ajout de findByPk pour le test du profil
     create: jest.fn(),
     comparePassword: jest.fn()
   };
@@ -23,6 +24,15 @@ jest.mock('../models/index.js', () => {
     }
   };
 });
+
+// Mock du middleware d'authentification
+jest.mock('../middleware/auth.js', () => ({
+  authMiddleware: jest.fn((req, res, next) => {
+    // Simuler un utilisateur authentifié
+    req.user = { id: 1, email: 'test@example.com', role: 'regular' };
+    next();
+  })
+}));
 
 // Configuration de l'application Express pour les tests
 const app = express();
@@ -108,6 +118,34 @@ describe('Authentication Routes', () => {
       expect(response.statusCode).toBe(400);
       expect(response.body).toHaveProperty('errors');
       expect(User.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /api/auth/profile', () => {
+    it('should return user profile when authenticated', async () => {
+      // Le middleware est déjà mocké en haut du fichier
+      // pour simuler un utilisateur authentifié
+      
+      // Mock pour User.findByPk qui est utilisé dans la route /profile
+      const mockUser = {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        role: 'regular',
+        is_active: true
+      };
+      
+      User.findByPk.mockResolvedValue(mockUser);
+      
+      // Pas besoin de token car le middleware d'auth est mocké
+      const response = await request(app).get('/api/auth/profile');
+      
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toHaveProperty('id');
+      expect(response.body).toHaveProperty('username');
+      expect(response.body).toHaveProperty('email');
+      expect(response.body).toHaveProperty('role');
+      expect(response.body).not.toHaveProperty('password');
     });
   });
 
